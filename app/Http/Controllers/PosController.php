@@ -10,6 +10,7 @@ use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Models\AuditLog;
 
 class PosController extends Controller
 {
@@ -68,11 +69,21 @@ class PosController extends Controller
             return back()->with('error', 'Keranjang masih kosong.');
         }
 
+        $dailyLimit = config('kasir.daily_transaction_limit', 20);
+        $todayTxCount = Transaction::where('user_id', auth()->id())
+            ->whereDate('created_at', now())
+            ->where('status', 'completed')
+            ->count();
+
+        if ($todayTxCount >= $dailyLimit) {
+            return back()->with('error', "Batas transaksi harian tercapai. Maksimal {$dailyLimit} transaksi per hari.");
+        }
+
         DB::transaction(function () use ($data, $cart, &$transaction) {
             $subtotal = 0;
             $items = [];
 
-                foreach ($cart as $item) {
+            foreach ($cart as $item) {
                 $product = Product::with('category')
                     ->lockForUpdate()
                     ->findOrFail($item['product_id']);
@@ -106,20 +117,78 @@ class PosController extends Controller
                 ];
             }
 
-            if ($data['paid_amount'] < $subtotal) {
+            // TAX & ROUNDING
+            $storeSettings = \App\Models\StoreSetting::first();
+
+            $taxPercentage = $storeSettings->tax_percentage ?? 0;
+            $taxAmount = ($taxPercentage > 0) ? round($subtotal * ($taxPercentage / 100), 2) : 0;
+
+            $totalBeforeRound = $subtotal + $taxAmount; // discount assumed 0
+
+            $rounding = (int) ($storeSettings->rounding ?? 0);
+            $roundingAmount = 0;
+            $total = $totalBeforeRound;
+
+            if ($rounding > 0) {
+                $rounded = (float) (round($totalBeforeRound / $rounding) * $rounding);
+                $roundingAmount = round($rounded - $totalBeforeRound, 2);
+                $total = round($totalBeforeRound + $roundingAmount, 2);
+            }
+
+            if ($data['paid_amount'] < $total) {
                 abort(422, 'Nominal pembayaran kurang.');
             }
 
+            // Invoice generation using transaction_number_format with {rand}
+            $format = $storeSettings->transaction_number_format ?? null;
+
+            if ($format) {
+                $replacements = [
+                    '{Y}' => now()->format('Y'),
+                    '{y}' => now()->format('y'),
+                    '{m}' => now()->format('m'),
+                    '{d}' => now()->format('d'),
+                ];
+
+                $invoiceNo = strtr($format, $replacements);
+
+                if (str_contains($invoiceNo, '{seq}')) {
+                    // Treat {seq} as legacy alias for random 4 char
+                    $invoiceNo = str_replace('{seq}', Str::upper(Str::random(4)), $invoiceNo);
+                }
+
+                if (str_contains($invoiceNo, '{rand}')) {
+                    $invoiceNo = str_replace('{rand}', Str::upper(Str::random(4)), $invoiceNo);
+                }
+            } else {
+                $invoiceNo = 'TRX-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(4));
+            }
+
             $transaction = Transaction::create([
-                'invoice_no' => 'TRX-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(4)),
+                'invoice_no' => $invoiceNo,
                 'user_id' => auth()->id(),
                 'subtotal' => $subtotal,
                 'discount' => 0,
-                'total' => $subtotal,
+                'tax_percentage' => $taxPercentage,
+                'tax_amount' => $taxAmount,
+                'total_before_round' => $totalBeforeRound,
+                'rounding' => $rounding,
+                'rounding_amount' => $roundingAmount,
+                'total' => $total,
                 'payment_method_id' => $data['payment_method_id'],
                 'paid_amount' => $data['paid_amount'],
-                'change_amount' => $data['paid_amount'] - $subtotal,
+                'change_amount' => $data['paid_amount'] - $total,
                 'status' => 'completed',
+            ]);
+
+            // Audit log: create transaction
+            AuditLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'create_transaction',
+                'auditable_type' => Transaction::class,
+                'auditable_id' => $transaction->id,
+                'description' => 'Transaction created ' . $transaction->invoice_no,
+                'ip_address' => request()->ip(),
             ]);
 
             foreach ($items as $item) {
@@ -161,11 +230,27 @@ class PosController extends Controller
         if (! $product->is_active || $product->stock <= 0) {
             return back()->with('error', 'Produk tidak tersedia.');
         }
-
         $cart = session('cart', []);
 
+        $requestedQty = request()->input('qty');
+
+        // If qty provided (e.g., weight in grams), use it; otherwise default increment/add 1
+        if ($requestedQty !== null) {
+            $qty = $requestedQty + 0;
+        } else {
+            $qty = null;
+        }
+
+        // Determine unit to store in cart: prefer stock unit for tembakau
+        $unit = $product->stockUnit();
+
         if (isset($cart[$product->id])) {
-            $newQty = $cart[$product->id]['qty'] + 1;
+            if ($qty === null) {
+                $newQty = $cart[$product->id]['qty'] + 1;
+            } else {
+                $newQty = $cart[$product->id]['qty'] + $qty;
+            }
+
             $requiredStock = $this->resolveStockReduction($product, $newQty);
 
             if ($requiredStock > $product->stock) {
@@ -173,10 +258,12 @@ class PosController extends Controller
             }
 
             $cart[$product->id]['qty'] = $newQty;
-            $cart[$product->id]['unit'] = $product->unit;
+            $cart[$product->id]['unit'] = $unit;
             $cart[$product->id]['is_tembakau'] = $this->isTembakau($product);
         } else {
-            $requiredStock = $this->resolveStockReduction($product, 1);
+            $initialQty = $qty === null ? 1 : $qty;
+
+            $requiredStock = $this->resolveStockReduction($product, $initialQty);
 
             if ($requiredStock > $product->stock) {
                 return back()->with('error', 'Jumlah melebihi stok tersedia.');
@@ -186,8 +273,8 @@ class PosController extends Controller
                 'product_id' => $product->id,
                 'name' => $product->name,
                 'price' => $product->sell_price,
-                'qty' => 1,
-                'unit' => $product->unit,
+                'qty' => $initialQty,
+                'unit' => $unit,
                 'is_tembakau' => $this->isTembakau($product),
             ];
         }
@@ -252,7 +339,12 @@ class PosController extends Controller
 
     protected function resolveStockReduction(Product $product, float $qty): int
     {
-        // If selling unit is ons (tembakau), qty is in ons, need to convert to gram (stock unit)
+        // If product stock unit is gram, qty is provided in grams => reduce directly
+        if (($product->stock_unit ?? '') === 'gram') {
+            return (int) round($qty);
+        }
+
+        // Backward compatibility: if selling unit is ons (qty in ons) => convert to gram
         if ($product->selling_unit === 'ons') {
             return (int) round($qty * 100);
         }
@@ -265,6 +357,11 @@ class PosController extends Controller
     {
         if (! is_numeric($qty) || $qty <= 0) {
             return false;
+        }
+
+        // If stock unit is gram (tembakau), allow numeric (grams)
+        if (($product->stock_unit ?? '') === 'gram') {
+            return true;
         }
 
         if ($product->selling_unit === 'ons') {
@@ -328,5 +425,49 @@ class PosController extends Controller
                 'is_tembakau' => $this->isTembakau($product),
             ],
         ]);
+    }
+
+    public function transactions()
+    {
+        $transactions = Transaction::with('items', 'paymentMethod')
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get();
+
+        return view('pos.transactions', compact('transactions'));
+    }
+
+    public function requestVoid(Request $request, Transaction $transaction)
+    {
+        if ($transaction->user_id !== auth()->id()) {
+            return back()->with('error', 'Anda tidak memiliki izin untuk membatalkan transaksi ini.');
+        }
+
+        if ($transaction->status !== 'completed') {
+            return back()->with('error', 'Transaksi tidak dapat dibatalkan.');
+        }
+
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $void = \App\Models\TransactionVoid::create([
+            'transaction_id' => $transaction->id,
+            'requested_by' => auth()->id(),
+            'reason' => $data['reason'] ?? null,
+            'status' => 'void_requested',
+        ]);
+
+        // Audit log: request void
+        \App\Models\AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'request_void',
+            'auditable_type' => Transaction::class,
+            'auditable_id' => $transaction->id,
+            'description' => 'Void requested: ' . ($data['reason'] ?? ''),
+            'ip_address' => $request->ip(),
+        ]);
+
+        return back()->with('success', 'Permintaan void terkirim. Menunggu persetujuan admin.');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\AuditLog;
 
 class AuthController extends Controller
 {
@@ -39,6 +40,15 @@ class AuthController extends Controller
 
         if (Auth::attempt($data, $request->filled('remember'))) {
             $request->session()->regenerate();
+            // Audit log: login
+            AuditLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'login',
+                'auditable_type' => null,
+                'auditable_id' => null,
+                'description' => 'User logged in',
+                'ip_address' => $request->ip(),
+            ]);
             $role = Auth::user()->role?->slug;
             if ($role === 'admin') {
                 return redirect()->intended('/admin');
@@ -54,6 +64,17 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        // Audit log: logout (if user authenticated)
+        if (Auth::check()) {
+            AuditLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'logout',
+                'auditable_type' => null,
+                'auditable_id' => null,
+                'description' => 'User logged out',
+                'ip_address' => $request->ip(),
+            ]);
+        }
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

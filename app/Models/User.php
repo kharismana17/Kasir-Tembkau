@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\CashierUnit;
 
 class User extends Authenticatable
 {
@@ -25,6 +26,7 @@ class User extends Authenticatable
         'phone',
         'role_id',
         'is_active',
+        'cashier_unit_id',
     ];
 
     /**
@@ -67,5 +69,22 @@ class User extends Authenticatable
     public function stockMovements()
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    public function cashierUnit()
+    {
+        return $this->belongsTo(CashierUnit::class);
+    }
+
+    public function setPin(string $pin)
+    {
+        $this->pin_hash = \Illuminate\Support\Facades\Hash::make($pin);
+        $this->save();
+    }
+
+    public function checkPin(string $pin): bool
+    {
+        if (! $this->pin_hash) return false;
+        return \Illuminate\Support\Facades\Hash::check($pin, $this->pin_hash);
     }
 }

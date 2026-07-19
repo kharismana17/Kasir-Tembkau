@@ -6,8 +6,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PosController;
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\CashierController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\UserPinController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\StockMovementController;
 use App\Http\Controllers\Admin\PaymentMethodController;
@@ -48,9 +50,15 @@ Route::post('/logout', [AuthController::class, 'logout'])
 */
 
 
-Route::prefix('pos')->name('pos.')->group(function () {
+Route::middleware(['auth', 'active', 'role:kasir'])->prefix('pos')->name('pos.')->group(function () {
     Route::get('/', [PosController::class, 'index'])
         ->name('index');
+
+    Route::get('/transactions', [PosController::class, 'transactions'])
+        ->name('transactions.index');
+
+    Route::post('/transactions/{transaction}/void-request', [PosController::class, 'requestVoid'])
+        ->name('transactions.void.request');
 
     Route::get('/scan-barcode', [PosController::class, 'scanBarcode'])
         ->name('scan-barcode');
@@ -86,6 +94,30 @@ Route::middleware(['auth', 'active', 'role:admin'])
         Route::get('/', [DashboardController::class, 'index'])
             ->name('dashboard');
 
+        // Cashier monitoring for admin
+        Route::get('/cashiers', [CashierController::class, 'index'])
+            ->name('cashiers.index');
+
+        Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])
+            ->name('audit-logs.index');
+
+        // User PIN management
+        Route::get('/users/{user}/pin', [UserPinController::class, 'edit'])
+            ->name('users.pin.edit');
+
+        Route::post('/users/{user}/pin', [UserPinController::class, 'update'])
+            ->name('users.pin.update');
+
+        // Void requests handling
+        Route::get('/voids', [\App\Http\Controllers\Admin\TransactionVoidController::class, 'index'])
+            ->name('voids.index');
+
+        Route::post('/voids/{transactionVoid}/approve', [\App\Http\Controllers\Admin\TransactionVoidController::class, 'approve'])
+            ->name('voids.approve');
+
+        Route::post('/voids/{transactionVoid}/reject', [\App\Http\Controllers\Admin\TransactionVoidController::class, 'reject'])
+            ->name('voids.reject');
+
 
         /*
         |--------------------------------------------------------------------------
@@ -103,9 +135,31 @@ Route::middleware(['auth', 'active', 'role:admin'])
         |--------------------------------------------------------------------------
         */
 
-        Route::resource('products', ProductController::class)
-            ->except(['show']);
+        Route::get(
+            '/products/print',
+            [ProductController::class, 'printAllBarcodes']
+        )->name('products.print');
 
+        Route::get(
+            '/products/{product}/barcode',
+            [ProductController::class, 'barcode']
+        )->name('products.barcode');
+
+        Route::get(
+            '/products/{product}/print-barcode',
+            [ProductController::class, 'printBarcode']
+        )->name('products.print-barcode');
+
+
+        Route::resource(
+            'products',
+            ProductController::class
+        )->except(['show']);
+
+        Route::get(
+            '/admin/products/print-all-barcodes',
+            [ProductController::class, 'printAllBarcodes']
+        )->name('products.print-all-barcodes');
 
         /*
         |--------------------------------------------------------------------------
@@ -116,8 +170,20 @@ Route::middleware(['auth', 'active', 'role:admin'])
         Route::get('/stock', [StockController::class, 'index'])
             ->name('stock.index');
 
+        Route::get('/stock/opname', [StockController::class, 'opnameIndex'])
+            ->name('stock.opname.index');
+
+        Route::post('/stock/opname', [StockController::class, 'opnameStore'])
+            ->name('stock.opname.store');
+
         Route::get('/stock/{product}/create', [StockController::class, 'create'])
             ->name('stock.create');
+
+        Route::get('/stock/{product}/adjust', [StockController::class, 'adjustCreate'])
+            ->name('stock.adjust.create');
+
+        Route::post('/stock/{product}/adjust', [StockController::class, 'adjustStore'])
+            ->name('stock.adjust.store');
 
         Route::post('/stock/{product}', [StockController::class, 'store'])
             ->name('stock.store');
@@ -174,4 +240,13 @@ Route::middleware(['auth', 'active', 'role:admin'])
 
         Route::get('/reports/sales', [ReportController::class, 'sales'])
             ->name('reports.sales');
+
+        // Settings
+        Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])
+            ->name('settings.index');
+
+        Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])
+            ->name('settings.update');
+
+        
     });

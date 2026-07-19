@@ -20,6 +20,12 @@ class Transaction extends Model
         'change_amount',
         'status',
         'notes',
+        // tax & rounding history
+        'tax_percentage',
+        'tax_amount',
+        'total_before_round',
+        'rounding',
+        'rounding_amount',
     ];
 
     protected $casts = [
@@ -28,6 +34,10 @@ class Transaction extends Model
         'total' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'change_amount' => 'decimal:2',
+        'tax_percentage' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'total_before_round' => 'decimal:2',
+        'rounding_amount' => 'decimal:2',
     ];
 
     public function user()

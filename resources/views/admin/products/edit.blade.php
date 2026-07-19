@@ -3,385 +3,612 @@
 @section('title', 'Edit Produk - Kasir Tembakau')
 
 @section('content')
-  <div class="mx-auto max-w-4xl space-y-8">
-    <div>
+  <div class="mx-auto max-w-5xl space-y-8">
+
+    {{-- HEADER --}}
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+
+      <div>
+        <div class="flex items-center gap-3">
+
+          <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#292522] text-[#C68B59] shadow-sm">
+            <svg
+              class="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-9.5a2.121 2.121 0 013 3L12 14l-4 1 1-4 8.5-8.5z"
+              />
+            </svg>
+          </div>
+
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#A46F45]">
+              Master Data
+            </p>
+
+            <h1 class="mt-1 text-2xl font-bold tracking-tight text-[#292522] sm:text-3xl">
+              Edit Produk
+            </h1>
+          </div>
+
+        </div>
+
+        <p class="mt-3 text-sm text-[#8A8179]">
+          Perbarui informasi produk
+          <span class="font-semibold text-[#292522]">
+            {{ $product->name }}
+          </span>
+        </p>
+      </div>
+
       <a
         href="{{ route('admin.products.index') }}"
-        class="text-sm font-medium text-emerald-700 hover:text-emerald-800"
+        class="inline-flex items-center justify-center gap-2 rounded-xl border border-[#E1D5C8] bg-white px-4 py-2.5 text-sm font-semibold text-[#6B4F3A] shadow-sm transition hover:border-[#C68B59] hover:bg-[#FAF7F3]"
       >
-        ← Kembali ke Produk
+        <svg
+          class="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+
+        Kembali ke Produk
       </a>
 
-      <p class="mt-6 text-sm uppercase tracking-[0.25em] text-emerald-600">
-        Master Data
-      </p>
-
-      <h1 class="mt-2 text-3xl font-semibold text-slate-900">
-        Edit Produk
-      </h1>
-
-      <p class="mt-2 text-slate-500">
-        Perbarui informasi produk {{ $product->name }}.
-      </p>
     </div>
 
-    @if ($errors->any())
-      <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-        <p class="font-semibold">Terdapat kesalahan:</p>
 
-        <ul class="mt-2 list-disc space-y-1 pl-5">
-          @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-          @endforeach
-        </ul>
+    {{-- ERROR --}}
+    @if ($errors->any())
+
+      <div class="flex items-start gap-3 rounded-2xl border border-[#E7B8B8] bg-[#FFF4F4] p-4">
+
+        <svg
+          class="mt-0.5 h-5 w-5 shrink-0 text-[#B45309]"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 9v2m0 4h.01M10.29 3.86l-7.82 13a2 2 0 001.71 3.14h15.64a2 2 0 001.71-3.14l-7.82-13a2 2 0 00-3.42 0z"
+          />
+        </svg>
+
+        <div>
+          <p class="text-sm font-semibold text-[#8B2C2C]">
+            Terdapat kesalahan
+          </p>
+
+          <ul class="mt-2 space-y-1 text-sm text-[#A33A3A]">
+            @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+            @endforeach
+          </ul>
+        </div>
+
       </div>
+
     @endif
 
+
+    {{-- FORM --}}
     <form
       method="POST"
       action="{{ route('admin.products.update', $product) }}"
       class="space-y-6"
     >
+
       @csrf
       @method('PUT')
 
-      <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 class="text-lg font-semibold text-slate-900">
-          Informasi Produk
-        </h2>
 
-        <div class="mt-6 grid gap-6 md:grid-cols-2">
-          <div>
-            <label
-              for="name"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Nama Produk
-            </label>
+      {{-- INFORMASI PRODUK --}}
+      <section class="overflow-hidden rounded-3xl border border-[#E7E1D9] bg-white shadow-sm">
 
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value="{{ old('name', $product->name) }}"
-              required
-              class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            >
+        <div class="border-b border-[#EEEAE4] bg-[#FAF8F5] px-6 py-5">
+
+          <div class="flex items-center gap-3">
+
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F1E5D8] text-[#8A5B3D]">
+
+              <svg
+                class="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
+
+            </div>
+
+            <div>
+              <h2 class="text-base font-bold text-[#292522]">
+                Informasi Produk
+              </h2>
+
+              <p class="mt-1 text-sm text-[#8A8179]">
+                Kelola identitas dan informasi dasar produk.
+              </p>
+            </div>
+
           </div>
 
-          <div>
-            <label
-              for="sku"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              SKU
-            </label>
+        </div>
 
-            <input
-              id="sku"
-              name="sku"
-              type="text"
-              value="{{ old('sku', $product->sku) }}"
-              required
-              class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            >
-          </div>
 
-          <div>
-            <label
-              for="barcode"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Barcode
-            </label>
+        <div class="p-6">
 
-            <input
-              id="barcode"
-              name="barcode"
-              type="text"
-              value="{{ old('barcode', $product->barcode) }}"
-              required
-              class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            >
-          </div>
+          <div class="grid gap-6 md:grid-cols-2">
 
-          <div>
-            <label
-              for="category_id"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Kategori
-            </label>
+            {{-- NAMA --}}
+            <div>
+              <label
+                for="name"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Nama Produk
+              </label>
 
-            <select
-              id="category_id"
-              name="category_id"
-              required
-              class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            >
-              <option value="">Pilih Kategori</option>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value="{{ old('name', $product->name) }}"
+                required
+                class="w-full rounded-2xl border border-[#D9D2C9] bg-white px-4 py-3 text-sm text-[#292522] outline-none transition placeholder:text-[#A3978D] hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+              >
+            </div>
 
-              @foreach ($categories as $category)
-                <option
-                  value="{{ $category->id }}"
-                  @selected(old('category_id', $product->category_id) == $category->id)
-                >
-                  {{ $category->name }}
+
+            {{-- SKU --}}
+            <div>
+              <label
+                for="sku"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                SKU
+              </label>
+
+              <input
+                id="sku"
+                name="sku"
+                type="text"
+                value="{{ old('sku', $product->sku) }}"
+                required
+                class="w-full rounded-2xl border border-[#D9D2C9] bg-white px-4 py-3 text-sm text-[#292522] outline-none transition hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+              >
+            </div>
+
+
+            {{-- BARCODE --}}
+            <div>
+              <label
+                for="barcode"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Barcode
+              </label>
+
+              <input
+                id="barcode"
+                name="barcode"
+                type="text"
+                value="{{ old('barcode', $product->barcode) }}"
+                required
+                class="w-full rounded-2xl border border-[#D9D2C9] bg-white px-4 py-3 text-sm text-[#292522] outline-none transition hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+              >
+            </div>
+
+
+            {{-- KATEGORI --}}
+            <div>
+              <label
+                for="category_id"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Kategori
+              </label>
+
+              <select
+                id="category_id"
+                name="category_id"
+                required
+                class="w-full rounded-2xl border border-[#D9D2C9] bg-white px-4 py-3 text-sm text-[#292522] outline-none transition hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+              >
+                <option value="">
+                  Pilih Kategori
                 </option>
-              @endforeach
-            </select>
+
+                @foreach ($categories as $category)
+
+                  <option
+                    value="{{ $category->id }}"
+                    @selected(old('category_id', $product->category_id) == $category->id)
+                  >
+                    {{ $category->name }}
+                  </option>
+
+                @endforeach
+
+              </select>
+            </div>
+
+
+            {{-- SATUAN STOK --}}
+            <div>
+              <label
+                for="stock_unit_display"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Satuan Stok
+              </label>
+
+              <input
+                id="stock_unit_display"
+                type="text"
+                readonly
+                value="{{ old('stock_unit', $product->stock_unit) }}"
+                class="w-full rounded-2xl border border-[#D9D2C9] bg-[#F4F1ED] px-4 py-3 text-sm font-semibold text-[#6B625B] outline-none"
+              >
+
+              <p class="mt-2 text-xs text-[#9A9189]">
+                Ditentukan otomatis berdasarkan kategori.
+              </p>
+            </div>
+
+
+            {{-- SATUAN PENJUALAN --}}
+            <div>
+              <label
+                for="selling_unit_display"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Satuan Penjualan
+              </label>
+
+              <input
+                id="selling_unit_display"
+                type="text"
+                readonly
+                value="{{ old('selling_unit', $product->selling_unit) }}"
+                class="w-full rounded-2xl border border-[#D9D2C9] bg-[#F4F1ED] px-4 py-3 text-sm font-semibold text-[#6B625B] outline-none"
+              >
+
+              <p class="mt-2 text-xs text-[#9A9189]">
+                Ditentukan otomatis berdasarkan kategori.
+              </p>
+            </div>
+
           </div>
 
-          <div>
+
+          {{-- STOK --}}
+          <div class="mt-6 grid gap-6 md:grid-cols-2">
+
+            <div>
+              <label
+                id="stockLabel"
+                for="stock"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Stok ({{ $product->stock_unit }})
+              </label>
+
+              <input
+                id="stock"
+                name="stock"
+                type="number"
+                min="0"
+                value="{{ old('stock', $product->stock) }}"
+                required
+                class="w-full rounded-2xl border border-[#D9D2C9] bg-white px-4 py-3 text-sm font-semibold text-[#292522] outline-none transition hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+              >
+
+              <p
+                id="stockHelper"
+                class="mt-2 text-xs text-[#9A9189]"
+              >
+                Masukkan stok produk.
+              </p>
+            </div>
+
+
+            {{-- STOK MINIMUM --}}
+            <div>
+              <label
+                id="stockMinLabel"
+                for="stock_min"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Stok Minimum ({{ $product->stock_unit }})
+              </label>
+
+              <input
+                id="stock_min"
+                name="stock_min"
+                type="number"
+                min="0"
+                value="{{ old('stock_min', $product->stock_min) }}"
+                required
+                class="w-full rounded-2xl border border-[#D9D2C9] bg-white px-4 py-3 text-sm font-semibold text-[#292522] outline-none transition hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+              >
+
+              <p
+                id="stockMinHelper"
+                class="mt-2 text-xs text-[#9A9189]"
+              >
+                Batas minimum stok produk.
+              </p>
+            </div>
+
+          </div>
+
+
+          {{-- DESKRIPSI --}}
+          <div class="mt-6">
+
             <label
-              for="stock_unit_display"
-              class="mb-2 block text-sm font-medium text-slate-700"
+              for="description"
+              class="mb-2 block text-sm font-semibold text-[#4B443F]"
             >
-              Satuan Stok
+              Deskripsi
             </label>
 
-            <input
-              id="stock_unit_display"
-              type="text"
-              readonly
-              value="{{ old('stock_unit', $product->stock_unit) }}"
-              class="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm outline-none"
-            >
+            <textarea
+              id="description"
+              name="description"
+              rows="4"
+              class="w-full resize-none rounded-2xl border border-[#D9D2C9] bg-white px-4 py-3 text-sm text-[#292522] outline-none transition placeholder:text-[#A3978D] hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+            >{{ old('description', $product->description) }}</textarea>
 
-            <p class="mt-2 text-xs text-slate-500">
-              Ditentukan otomatis berdasarkan kategori
-            </p>
           </div>
 
-          <div>
-            <label
-              for="selling_unit_display"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Satuan Penjualan
-            </label>
-
-            <input
-              id="selling_unit_display"
-              type="text"
-              readonly
-              value="{{ old('selling_unit', $product->selling_unit) }}"
-              class="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm outline-none"
-            >
-
-            <p class="mt-2 text-xs text-slate-500">
-              Ditentukan otomatis berdasarkan kategori
-            </p>
-          </div>
         </div>
 
-        <div class="mt-6">
-          <label
-            id="stockLabel"
-            for="stock"
-            class="mb-2 block text-sm font-medium text-slate-700"
-          >
-            Stok Awal
-          </label>
+      </section>
 
-          <input
-            id="stock"
-            name="stock"
-            type="number"
-            min="0"
-            value="{{ old('stock', $product->stock) }}"
-            required
-            class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-          >
 
-          <p class="mt-2 text-xs text-slate-500" id="stockHelper">
-            Masukkan stok.
-          </p>
-        </div>
+      {{-- HARGA --}}
+      <section class="overflow-hidden rounded-3xl border border-[#E7E1D9] bg-white shadow-sm">
 
-        <div class="mt-6">
-          <label
-            id="stockMinLabel"
-            for="stock_min"
-            class="mb-2 block text-sm font-medium text-slate-700"
-          >
-            Stok Minimum
-          </label>
+        <div class="border-b border-[#EEEAE4] bg-[#FAF8F5] px-6 py-5">
 
-          <input
-            id="stock_min"
-            name="stock_min"
-            type="number"
-            min="0"
-            value="{{ old('stock_min', $product->stock_min) }}"
-            required
-            class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-          >
+          <div class="flex items-center gap-3">
 
-          <p class="mt-2 text-xs text-slate-500" id="stockMinHelper">
-            Batas minimum stok.
-          </p>
-        </div>
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F1E5D8] text-[#8A5B3D]">
 
-        <script>
-          const categorySelect = document.getElementById('category_id');
-          const stockUnitDisplay = document.getElementById('stock_unit_display');
-          const sellingUnitDisplay = document.getElementById('selling_unit_display');
-          const stockLabel = document.getElementById('stockLabel');
-          const stockMinLabel = document.getElementById('stockMinLabel');
-          const stockHelper = document.getElementById('stockHelper');
-          const stockMinHelper = document.getElementById('stockMinHelper');
+              <svg
+                class="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                  d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3 1.343 3 3-1.343 3-3 3m0-14V5m0 14v-2m-6-5H5m14 0h-1"
+                />
+              </svg>
 
-          function getUnitsByCategory(categoryName) {
-            const categoryLower = (categoryName ?? '').trim().toLowerCase();
+            </div>
 
-            if (categoryLower === 'tembakau') {
-              return { stock: 'gram', selling: 'ons' };
-            }
+            <div>
+              <h2 class="text-base font-bold text-[#292522]">
+                Harga Produk
+              </h2>
 
-            if (categoryLower.includes('pack') || categoryLower.includes('kemasan')) {
-              return { stock: 'pack', selling: 'pack' };
-            }
+              <p class="mt-1 text-sm text-[#8A8179]">
+                Atur harga beli dan harga jual produk.
+              </p>
+            </div>
 
-            return { stock: 'pcs', selling: 'pcs' };
-          }
-
-          function updateProductUnitForm() {
-            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
-            const categoryName = selectedOption?.textContent ?? '';
-            const units = getUnitsByCategory(categoryName);
-
-            stockUnitDisplay.value = units.stock;
-            sellingUnitDisplay.value = units.selling;
-
-            stockLabel.textContent = `Stok Awal (${units.stock})`;
-            stockMinLabel.textContent = `Stok Minimum (${units.stock})`;
-            stockHelper.textContent = `Masukkan stok dalam ${units.stock}.`;
-            stockMinHelper.textContent = `Batas minimum stok dalam ${units.stock}.`;
-          }
-
-          categorySelect.addEventListener('change', updateProductUnitForm);
-
-          // Initialize on page load
-          updateProductUnitForm();
-        </script>
-
-        <div class="mt-6">
-          <label
-            for="description"
-            class="mb-2 block text-sm font-medium text-slate-700"
-          >
-            Deskripsi
-          </label>
-
-          <textarea
-            id="description"
-            name="description"
-            rows="4"
-            class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-          >{{ old('description', $product->description) }}</textarea>
-        </div>
-      </div>
-
-      <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 class="text-lg font-semibold text-slate-900">
-          Harga dan Stok
-        </h2>
-
-        <div class="mt-6 grid gap-6 md:grid-cols-2">
-          <div>
-            <label
-              for="buy_price"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Harga Beli
-            </label>
-
-            <input
-              id="buy_price"
-              name="buy_price"
-              type="number"
-              min="0"
-              value="{{ old('buy_price', $product->buy_price) }}"
-              required
-              class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            >
           </div>
 
-          <div>
-            <label
-              for="sell_price"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Harga Jual
-            </label>
-
-            <input
-              id="sell_price"
-              name="sell_price"
-              type="number"
-              min="0"
-              value="{{ old('sell_price', $product->sell_price) }}"
-              required
-              class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            >
-          </div>
-
-          <div>
-            <label
-              for="stock"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Stok
-            </label>
-
-            <input
-              id="stock"
-              name="stock"
-              type="number"
-              min="0"
-              value="{{ old('stock', $product->stock) }}"
-              required
-              class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            >
-          </div>
-
-          <div>
-            <label
-              for="stock_min"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Stok Minimum
-            </label>
-
-            <input
-              id="stock_min"
-              name="stock_min"
-              type="number"
-              min="0"
-              value="{{ old('stock_min', $product->stock_min) }}"
-              required
-              class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            >
-          </div>
         </div>
-      </div>
 
-      <div class="flex justify-end gap-3">
+
+        <div class="p-6">
+
+          <div class="grid gap-6 md:grid-cols-2">
+
+            {{-- HARGA BELI --}}
+            <div>
+              <label
+                for="buy_price"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Harga Beli
+              </label>
+
+              <div class="relative">
+
+                <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-semibold text-[#9A9189]">
+                  Rp
+                </span>
+
+                <input
+                  id="buy_price"
+                  name="buy_price"
+                  type="number"
+                  min="0"
+                  value="{{ old('buy_price', $product->buy_price) }}"
+                  required
+                  class="w-full rounded-2xl border border-[#D9D2C9] bg-white py-3 pl-12 pr-4 text-sm font-semibold text-[#292522] outline-none transition hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+                >
+
+              </div>
+            </div>
+
+
+            {{-- HARGA JUAL --}}
+            <div>
+              <label
+                for="sell_price"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Harga Jual
+              </label>
+
+              <div class="relative">
+
+                <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-semibold text-[#9A9189]">
+                  Rp
+                </span>
+
+                <input
+                  id="sell_price"
+                  name="sell_price"
+                  type="number"
+                  min="0"
+                  value="{{ old('sell_price', $product->sell_price) }}"
+                  required
+                  class="w-full rounded-2xl border border-[#D9D2C9] bg-white py-3 pl-12 pr-4 text-sm font-semibold text-[#292522] outline-none transition hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+                >
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {{-- ACTION --}}
+      <div class="flex flex-col-reverse gap-3 border-t border-[#E7E1D9] pt-6 sm:flex-row sm:justify-end">
+
         <a
           href="{{ route('admin.products.index') }}"
-          class="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+          class="inline-flex items-center justify-center rounded-2xl border border-[#E1D5C8] bg-white px-5 py-3 text-sm font-semibold text-[#6B4F3A] transition hover:bg-[#FAF7F3]"
         >
           Batal
         </a>
 
         <button
           type="submit"
-          class="rounded-2xl bg-emerald-700 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/15 hover:bg-emerald-800"
+          class="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#292522] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#292522]/15 transition hover:bg-[#3A332E] focus:outline-none focus:ring-4 focus:ring-[#C68B59]/20"
         >
+
+          <svg
+            class="h-4 w-4 text-[#D8A06A]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+
           Simpan Perubahan
+
         </button>
+
       </div>
+
     </form>
+
   </div>
+
+
+  @push('scripts')
+
+    <script>
+      const categorySelect = document.getElementById('category_id');
+      const stockUnitDisplay = document.getElementById('stock_unit_display');
+      const sellingUnitDisplay = document.getElementById('selling_unit_display');
+      const stockLabel = document.getElementById('stockLabel');
+      const stockMinLabel = document.getElementById('stockMinLabel');
+      const stockHelper = document.getElementById('stockHelper');
+      const stockMinHelper = document.getElementById('stockMinHelper');
+
+      function getUnitsByCategory(categoryName) {
+        const categoryLower = (categoryName ?? '').trim().toLowerCase();
+
+        if (categoryLower === 'tembakau') {
+          return {
+            stock: 'gram',
+            selling: 'ons'
+          };
+        }
+
+        if (
+          categoryLower.includes('pack') ||
+          categoryLower.includes('kemasan')
+        ) {
+          return {
+            stock: 'pack',
+            selling: 'pack'
+          };
+        }
+
+        return {
+          stock: 'pcs',
+          selling: 'pcs'
+        };
+      }
+
+      function updateProductUnitForm() {
+        const selectedOption =
+          categorySelect.options[categorySelect.selectedIndex];
+
+        const categoryName =
+          selectedOption?.textContent ?? '';
+
+        const units =
+          getUnitsByCategory(categoryName);
+
+        stockUnitDisplay.value = units.stock;
+        sellingUnitDisplay.value = units.selling;
+
+        stockLabel.textContent =
+          `Stok (${units.stock})`;
+
+        stockMinLabel.textContent =
+          `Stok Minimum (${units.stock})`;
+
+        stockHelper.textContent =
+          `Masukkan stok dalam ${units.stock}.`;
+
+        stockMinHelper.textContent =
+          `Batas minimum stok dalam ${units.stock}.`;
+      }
+
+      categorySelect.addEventListener(
+        'change',
+        updateProductUnitForm
+      );
+
+      updateProductUnitForm();
+    </script>
+
+  @endpush
+
 @endsection

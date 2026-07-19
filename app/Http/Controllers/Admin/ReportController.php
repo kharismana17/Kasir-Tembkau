@@ -33,7 +33,7 @@ class ReportController extends Controller
         */
 
         $transactions = Transaction::with([
-                'user',
+                'user.cashierUnit',
                 'paymentMethod',
             ])
             ->where('status', 'completed')
@@ -119,6 +119,57 @@ class ReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | CASHIER & UNIT SUMMARY
+        |--------------------------------------------------------------------------
+        */
+
+        $cashierSummary = $transactions
+            ->groupBy('user_id')
+            ->map(function ($transactions) {
+                $user = $transactions->first()->user;
+
+                return [
+                    'user' => $user,
+                    'name' => $user?->name ?? 'Kasir tidak diketahui',
+                    'unit' => $user?->cashierUnit?->name ?? 'Tanpa Unit',
+                    'tx_count' => $transactions->count(),
+                    'sales' => $transactions->sum('total'),
+                    'average' => $transactions->count() > 0
+                        ? $transactions->sum('total') / $transactions->count()
+                        : 0,
+                    'last_activity' => $transactions->max('created_at'),
+                ];
+            })
+            ->sortByDesc('sales')
+            ->values();
+
+        $unitSummary = $transactions
+            ->groupBy(fn ($transaction) => $transaction->user?->cashierUnit?->name ?? 'Tanpa Unit')
+            ->map(function ($transactions, $unit) {
+                $cashiers = $transactions
+                    ->pluck('user')
+                    ->filter()
+                    ->unique('id');
+
+                return [
+                    'unit' => $unit,
+                    'tx_count' => $transactions->count(),
+                    'sales' => $transactions->sum('total'),
+                    'cashier_count' => $cashiers->count(),
+                    'average' => $transactions->count() > 0
+                        ? $transactions->sum('total') / $transactions->count()
+                        : 0,
+                ];
+            })
+            ->sortByDesc('sales')
+            ->values();
+
+        $cashierActivitySummary = $cashierSummary
+            ->sortByDesc('last_activity')
+            ->values();
+
+        /*
+        |--------------------------------------------------------------------------
         | BEST SELLING PRODUCTS
         |--------------------------------------------------------------------------
         */
@@ -173,6 +224,9 @@ class ReportController extends Controller
             'totalProfit',
             'profitPercentage',
             'paymentSummary',
+            'cashierSummary',
+            'cashierActivitySummary',
+            'unitSummary',
             'bestSellingProducts',
             'salesChart',
             'itemsByUnit',

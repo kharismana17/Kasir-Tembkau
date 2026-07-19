@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\PaymentMethod;
 use App\Models\Product;
+use App\Models\Role;
 use App\Models\StockMovement;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
@@ -17,6 +18,7 @@ class ProductBarcodeAndUnitTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+    private User $kasir;
     private PaymentMethod $paymentMethod;
     private Category $tembakauCategory;
     private Category $pcsCategory;
@@ -25,9 +27,27 @@ class ProductBarcodeAndUnitTest extends TestCase
     {
         parent::setUp();
 
+        $adminRole = Role::create([
+            'name' => 'Admin',
+            'slug' => 'admin',
+            'description' => 'Administrator',
+        ]);
+
+        $kasirRole = Role::create([
+            'name' => 'Kasir',
+            'slug' => 'kasir',
+            'description' => 'Pengguna kasir',
+        ]);
+
         // Create admin user
         $this->admin = User::factory()->create([
-            'role' => 'admin',
+            'role_id' => $adminRole->id,
+            'is_active' => true,
+        ]);
+
+        // Create cashier user for POS checkout tests
+        $this->kasir = User::factory()->create([
+            'role_id' => $kasirRole->id,
             'is_active' => true,
         ]);
 
@@ -108,7 +128,7 @@ class ProductBarcodeAndUnitTest extends TestCase
             'sku' => 'GG001',
             'name' => 'Gudang Garam Surya',
             'buy_price' => 15000,
-            'sell_price' => 20000,  // Rp20,000 per ons
+            'sell_price' => 200,  // Rp200 per gram
             'stock' => 1000,        // 1000 gram
             'stock_min' => 100,
             'stock_unit' => 'gram',
@@ -117,16 +137,16 @@ class ProductBarcodeAndUnitTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->actingAs($this->admin, 'api');
+        $this->actingAs($this->kasir);
 
-        // Simulate adding 1 ons (100 gram) to cart
+        // Simulate adding 100 grams to cart (1 ons)
         $cart = [
             $product->id => [
                 'product_id' => $product->id,
                 'name' => $product->name,
-                'price' => 20000,
-                'qty' => 1,  // 1 ons
-                'unit' => 'ons',
+                'price' => 200,
+                'qty' => 100,  // 100 gram
+                'unit' => 'gram',
                 'is_tembakau' => true,
             ],
         ];
@@ -153,8 +173,8 @@ class ProductBarcodeAndUnitTest extends TestCase
             ->where('product_id', $product->id)
             ->first();
         $this->assertNotNull($transactionItem);
-        $this->assertEquals(1, $transactionItem->qty);  // 1 ons
-        $this->assertEquals(20000, $transactionItem->price);
+        $this->assertEquals(100, $transactionItem->qty);  // 100 gram
+        $this->assertEquals(200, $transactionItem->price);
         $this->assertEquals(20000, $transactionItem->subtotal);
 
         // Verify stock reduction (100 gram)
@@ -185,7 +205,7 @@ class ProductBarcodeAndUnitTest extends TestCase
             'sku' => 'GG002',
             'name' => 'Gudang Garam Surya',
             'buy_price' => 15000,
-            'sell_price' => 20000,
+            'sell_price' => 200,
             'stock' => 1000,
             'stock_min' => 100,
             'stock_unit' => 'gram',
@@ -194,16 +214,16 @@ class ProductBarcodeAndUnitTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->actingAs($this->admin, 'api');
+        $this->actingAs($this->kasir);
 
-        // Simulate adding 2.5 ons to cart
+        // Simulate adding 250 grams to cart (2.5 ons)
         $cart = [
             $product->id => [
                 'product_id' => $product->id,
                 'name' => $product->name,
-                'price' => 20000,
-                'qty' => 2.5,  // 2.5 ons
-                'unit' => 'ons',
+                'price' => 200,
+                'qty' => 250,  // 250 gram
+                'unit' => 'gram',
                 'is_tembakau' => true,
             ],
         ];
@@ -220,7 +240,7 @@ class ProductBarcodeAndUnitTest extends TestCase
 
         // Verify transaction
         $transaction = Transaction::latest()->first();
-        $this->assertEquals(50000, $transaction->subtotal);  // 20000 * 2.5
+        $this->assertEquals(50000, $transaction->subtotal);  // 200 * 250
 
         // Verify stock reduction (250 gram)
         $product->refresh();
@@ -249,7 +269,7 @@ class ProductBarcodeAndUnitTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->actingAs($this->admin, 'api');
+        $this->actingAs($this->kasir);
 
         // Simulate adding 5 pcs to cart
         $cart = [
@@ -294,7 +314,7 @@ class ProductBarcodeAndUnitTest extends TestCase
             'sku' => 'GG004',
             'name' => 'Gudang Garam Surya',
             'buy_price' => 15000,
-            'sell_price' => 20000,
+            'sell_price' => 200,
             'stock' => 500,  // 500 gram
             'stock_min' => 100,
             'stock_unit' => 'gram',
@@ -303,16 +323,16 @@ class ProductBarcodeAndUnitTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->actingAs($this->admin, 'api');
+        $this->actingAs($this->kasir);
 
-        // Simulate adding 7 ons (700 gram) to cart, but stock only 500 gram
+        // Simulate adding 700 grams to cart, but stock only 500 gram
         $cart = [
             $product->id => [
                 'product_id' => $product->id,
                 'name' => $product->name,
-                'price' => 20000,
-                'qty' => 7,  // 7 ons = 700 gram, but stock only 500 gram
-                'unit' => 'ons',
+                'price' => 200,
+                'qty' => 700,  // 700 gram
+                'unit' => 'gram',
                 'is_tembakau' => true,
             ],
         ];
@@ -326,7 +346,7 @@ class ProductBarcodeAndUnitTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $response->assertSessionHas('error', 'Stok produk Gudang Garam Surya tidak mencukupi');
+        $response->assertSeeText('Stok produk Gudang Garam Surya tidak mencukupi');
 
         // Verify stock tidak berubah
         $product->refresh();
