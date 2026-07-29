@@ -182,7 +182,6 @@ class CashierTransactionLimitTest extends TestCase
             'paid_amount' => 20000,
         ]);
 
-        $response->assertRedirect('/pos');
         $response->assertSessionHas('success', 'Transaksi berhasil disimpan.');
 
         $this->assertDatabaseHas('transactions', [

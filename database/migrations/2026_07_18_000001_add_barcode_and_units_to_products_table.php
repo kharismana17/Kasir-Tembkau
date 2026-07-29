@@ -41,7 +41,7 @@ return new class extends Migration
 
                 if ($categoryName === 'tembakau') {
                     $stockUnit = 'gram';
-                    $sellingUnit = 'ons';
+                    $sellingUnit = 'gram';
                 } elseif ($product->unit === 'pack') {
                     $stockUnit = 'pack';
                     $sellingUnit = 'pack';

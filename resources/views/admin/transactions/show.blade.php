@@ -219,17 +219,26 @@
 
 
                 <td class="px-6 py-5 text-right text-[#6B625B]">
-                  Rp {{ number_format($item->price, 0, ',', '.') }}
+                  <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                    <span class="mr-1">Rp</span>
+                    <span>{{ number_format($item->price, 0, ',', '.') }}</span>
+                  </span>
                 </td>
 
 
                 <td class="px-6 py-5 text-right text-[#6B625B]">
-                  Rp {{ number_format($item->discount, 0, ',', '.') }}
+                  <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                    <span class="mr-1">Rp</span>
+                    <span>{{ number_format($item->discount, 0, ',', '.') }}</span>
+                  </span>
                 </td>
 
 
                 <td class="px-6 py-5 text-right font-semibold text-[#6B4F3A]">
-                  Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+                  <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                    <span class="mr-1">Rp</span>
+                    <span>{{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                  </span>
                 </td>
 
               </tr>
@@ -308,7 +317,10 @@
             </span>
 
             <span class="font-semibold text-[#292522]">
-              Rp {{ number_format($transaction->paid_amount, 0, ',', '.') }}
+              <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                <span class="mr-1">Rp</span>
+                <span>{{ number_format($transaction->paid_amount, 0, ',', '.') }}</span>
+              </span>
             </span>
 
           </div>
@@ -321,7 +333,10 @@
             </span>
 
             <span class="font-semibold text-[#3F6B4A]">
-              Rp {{ number_format($transaction->change_amount, 0, ',', '.') }}
+              <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                <span class="mr-1">Rp</span>
+                <span>{{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
+              </span>
             </span>
 
           </div>
@@ -362,7 +377,10 @@
             </span>
 
             <span class="font-semibold text-[#292522]">
-              Rp {{ number_format($transaction->subtotal, 0, ',', '.') }}
+              <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                <span class="mr-1">Rp</span>
+                <span>{{ number_format($transaction->subtotal, 0, ',', '.') }}</span>
+              </span>
             </span>
 
           </div>
@@ -375,7 +393,10 @@
             </span>
 
             <span class="font-semibold text-[#292522]">
-              Rp {{ number_format($transaction->discount, 0, ',', '.') }}
+              <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                <span class="mr-1">Rp</span>
+                <span>{{ number_format($transaction->discount, 0, ',', '.') }}</span>
+              </span>
             </span>
 
           </div>
@@ -388,7 +409,10 @@
             </span>
 
             <span class="text-2xl font-bold tracking-tight text-[#6B4F3A]">
-              Rp {{ number_format($transaction->total, 0, ',', '.') }}
+              <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                <span class="mr-1">Rp</span>
+                <span>{{ number_format($transaction->total, 0, ',', '.') }}</span>
+              </span>
             </span>
 
           </div>

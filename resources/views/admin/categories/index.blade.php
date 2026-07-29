@@ -3,7 +3,7 @@
 @section('title', 'Kategori - Kasir Tembakau')
 
 @section('content')
-  <div class="space-y-8">
+  <div class="space-y-6">
 
     {{-- PAGE HEADER --}}
     <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">

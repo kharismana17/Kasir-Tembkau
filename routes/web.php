@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\PosController;
 
 use App\Http\Controllers\Admin\DashboardController;
@@ -15,6 +16,9 @@ use App\Http\Controllers\Admin\StockMovementController;
 use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Models\PaymentMethod;
+use App\Models\Transaction;
+use App\Http\Controllers\SavedOrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,6 +61,15 @@ Route::middleware(['auth', 'active', 'role:kasir'])->prefix('pos')->name('pos.')
     Route::get('/transactions', [PosController::class, 'transactions'])
         ->name('transactions.index');
 
+    Route::get('/transactions/data', [PosController::class, 'transactionsData'])
+        ->name('transactions.data');
+
+    Route::get('/attendance', [AttendanceController::class, 'cashierIndex'])
+        ->name('attendance.index');
+
+    Route::post('/attendance/verify', [AttendanceController::class, 'verify'])
+        ->name('attendance.verify');
+
     Route::post('/transactions/{transaction}/void-request', [PosController::class, 'requestVoid'])
         ->name('transactions.void.request');
 
@@ -75,10 +88,50 @@ Route::middleware(['auth', 'active', 'role:kasir'])->prefix('pos')->name('pos.')
     Route::delete('/cart', [PosController::class, 'clearCart'])
         ->name('cart.clear');
 
+    Route::get('/checkout', [PosController::class, 'checkoutPage'])
+        ->name('checkout.page');
+
+    Route::get('/receipt/{transaction}', [PosController::class, 'receiptPage'])
+        ->name('receipt.page');
+
     Route::post('/checkout', [PosController::class, 'checkout'])
         ->name('checkout');
+    
+    Route::post('/save', [PosController::class, 'save'])
+        ->name('save');
+    
+    Route::post('/save-order',
+        [PosController::class,'saveOrder'])
+        ->name('save');
+
+    Route::get('/load-order/{order}',
+        [PosController::class,'loadOrder'])
+        ->name('load');
+
+    Route::delete('/pos/delete-order/{order}',
+        [PosController::class,'deleteOrder'])
+        ->name('delete');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Saved Orders
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth','active','role:kasir'])->group(function () {
+
+    Route::post('/saved-orders', [SavedOrderController::class, 'save'])
+        ->name('saved-orders.save');
+
+    Route::get('/saved-orders', [SavedOrderController::class, 'index'])
+        ->name('saved-orders.index');
+
+    Route::post('/saved-orders/{savedOrder}/load', [SavedOrderController::class, 'load'])
+        ->name('saved-orders.load');
+
+    Route::delete('/saved-orders/{savedOrder}', [SavedOrderController::class, 'delete'])
+        ->name('saved-orders.delete');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -97,6 +150,17 @@ Route::middleware(['auth', 'active', 'role:admin'])
         // Cashier monitoring for admin
         Route::get('/cashiers', [CashierController::class, 'index'])
             ->name('cashiers.index');
+
+        Route::get('/attendances', [AttendanceController::class, 'adminIndex'])
+            ->name('attendances.index');
+
+        Route::get('/attendances/data', [AttendanceController::class, 'adminData'])
+            ->name('attendances.data');
+
+        // Attendance users (names for absensi) - managed from Admin -> Absensi Kasir page
+        Route::resource('attendances/users', \App\Http\Controllers\Admin\AttendanceUserController::class)
+            ->only(['store', 'update', 'destroy'])
+            ->names('attendances.users');
 
         Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])
             ->name('audit-logs.index');
@@ -231,7 +295,7 @@ Route::middleware(['auth', 'active', 'role:admin'])
         Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])
             ->name('transactions.show');
 
-
+      
         /*
         |--------------------------------------------------------------------------
         | Reports

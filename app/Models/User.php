@@ -76,6 +76,11 @@ class User extends Authenticatable
         return $this->belongsTo(CashierUnit::class);
     }
 
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     public function setPin(string $pin)
     {
         $this->pin_hash = \Illuminate\Support\Facades\Hash::make($pin);

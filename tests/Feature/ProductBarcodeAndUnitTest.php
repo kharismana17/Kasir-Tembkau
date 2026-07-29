@@ -88,8 +88,8 @@ class ProductBarcodeAndUnitTest extends TestCase
             'stock' => 1000,
             'stock_min' => 100,
             'stock_unit' => 'gram',
-            'selling_unit' => 'ons',
-            'unit' => 'ons',
+            'selling_unit' => 'gram',
+            'unit' => 'gram',
             'is_active' => true,
         ]);
 
@@ -106,8 +106,8 @@ class ProductBarcodeAndUnitTest extends TestCase
             'stock' => 800,
             'stock_min' => 100,
             'stock_unit' => 'gram',
-            'selling_unit' => 'ons',
-            'unit' => 'ons',
+            'selling_unit' => 'gram',
+            'unit' => 'gram',
             'is_active' => true,
         ]);
     }
@@ -132,8 +132,8 @@ class ProductBarcodeAndUnitTest extends TestCase
             'stock' => 1000,        // 1000 gram
             'stock_min' => 100,
             'stock_unit' => 'gram',
-            'selling_unit' => 'ons',
-            'unit' => 'ons',
+            'selling_unit' => 'gram',
+            'unit' => 'gram',
             'is_active' => true,
         ]);
 
@@ -209,8 +209,8 @@ class ProductBarcodeAndUnitTest extends TestCase
             'stock' => 1000,
             'stock_min' => 100,
             'stock_unit' => 'gram',
-            'selling_unit' => 'ons',
-            'unit' => 'ons',
+            'selling_unit' => 'gram',
+            'unit' => 'gram',
             'is_active' => true,
         ]);
 
@@ -318,8 +318,8 @@ class ProductBarcodeAndUnitTest extends TestCase
             'stock' => 500,  // 500 gram
             'stock_min' => 100,
             'stock_unit' => 'gram',
-            'selling_unit' => 'ons',
-            'unit' => 'ons',
+            'selling_unit' => 'gram',
+            'unit' => 'gram',
             'is_active' => true,
         ]);
 
@@ -395,7 +395,7 @@ class ProductBarcodeAndUnitTest extends TestCase
     /**
      * TEST 7: Unit otomatis untuk kategori Tembakau
      * - stock_unit harus 'gram'
-     * - selling_unit harus 'ons'
+     * - selling_unit harus 'gram'
      */
     public function test_tobacco_units_auto_set(): void
     {
@@ -415,7 +415,7 @@ class ProductBarcodeAndUnitTest extends TestCase
         $product = Product::where('sku', 'GG999')->first();
         $this->assertNotNull($product);
         $this->assertEquals('gram', $product->stock_unit);
-        $this->assertEquals('ons', $product->selling_unit);
+        $this->assertEquals('gram', $product->selling_unit);
     }
 
     /**

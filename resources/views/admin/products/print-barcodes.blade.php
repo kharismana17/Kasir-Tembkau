@@ -112,11 +112,16 @@
         }
 
         .barcode {
-            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2mm 0;
+        }
 
-            max-width: 48mm;
-
-            height: 15mm;
+        .barcode svg {
+            width:48mm;
+            height:auto;
+            max-width: 52mm;
         }
 
         .barcode-number {

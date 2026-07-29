@@ -12,12 +12,14 @@
 
 <body class="min-h-screen bg-[#F7F5F0] text-[#292522]">
 
-    <div class="flex min-h-screen">
+    <div class="flex min-h-screen flex-col lg:flex-row">
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-black/40 lg:hidden"></div>
 
         {{-- =====================================================
             SIDEBAR
         ====================================================== --}}
-        <aside class="hidden lg:flex lg:w-72 xl:w-80 flex-col bg-[#292522] text-white">
+        <aside id="sidebar" class="fixed left-0 top-0 z-50 flex h-screen w-72 -translate-x-full transform flex-col bg-[#292522] text-white shadow-2xl transition duration-300 ease-in-out lg:static lg:z-auto lg:h-auto lg:w-72 lg:translate-x-0 lg:flex lg:shadow-none xl:w-80">
 
             {{-- BRAND --}}
             <div class="border-b border-white/10 px-6 py-6">
@@ -316,11 +318,12 @@
 
                     <div class="space-y-1">
 
-                        <a href="{{ route('admin.cashiers.index') }}"
-                           class="group flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition
-                           {{ request()->routeIs('admin.cashiers.*')
-                                ? 'bg-white/10 text-white'
-                                : 'text-[#C9C0B8] hover:bg-white/10 hover:text-white' }}">
+
+                                <a href="{{ route('admin.cashiers.index') }}"
+                                    class="group flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition
+                                    {{ request()->routeIs('admin.cashiers.*')
+                                          ? 'bg-white/10 text-white'
+                                          : 'text-[#C9C0B8] hover:bg-white/10 hover:text-white' }}">
 
                             <svg class="h-5 w-5 shrink-0 opacity-80"
                                  fill="none"
@@ -338,6 +341,29 @@
 
                         </a>
 
+                        
+
+                        <a href="{{ route('admin.attendances.index') }}"
+                           class="group flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition
+                           {{ request()->routeIs('admin.attendances.*')
+                                ? 'bg-white/10 text-white'
+                                : 'text-[#C9C0B8] hover:bg-white/10 hover:text-white' }}">
+
+                            <svg class="h-5 w-5 shrink-0 opacity-80"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24">
+
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="1.8"
+                                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                            </svg>
+
+                            <span>Absensi Kasir</span>
+
+                        </a>
 
                         <a href="{{ route('admin.audit-logs.index') }}"
                            class="group flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition
@@ -431,42 +457,60 @@
 
 
             {{-- HEADER --}}
-            <header class="sticky top-0 z-20 border-b border-[#E7E1D9] bg-[#F7F5F0]/95 backdrop-blur-sm">
+            <header class="sticky top-0 z-20 border-b border-[#E7E1D9] bg-[#F7F5F0]/95 backdrop-blur">
 
-                <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 xl:px-8">
+                <div class="flex h-16 items-center justify-between px-4 lg:px-8">
 
-                    <div>
+                    {{-- Bagian kiri --}}
+                    <div class="flex items-center gap-4">
 
-                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#A3978D]">
-                            {{ now()->translatedFormat('l, d F Y') }}
-                        </p>
+                        <button
+                            type="button"
+                            id="sidebar-toggle"
+                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#C68B59] text-white transition hover:bg-[#B77742] lg:hidden">
 
-                        <p class="mt-1 text-sm text-[#8A8179]">
+                            <svg class="h-5 w-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
 
-                            Selamat datang kembali,
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16"/>
 
-                            <span class="font-semibold text-[#292522]">
+                            </svg>
+
+                        </button>
+
+                        <div>
+
+                            <p class="text-xs uppercase tracking-[0.25em] text-[#A3978D]">
+                                {{ now()->translatedFormat('l, d F Y') }}
+                            </p>
+
+                            <h2 class="text-lg font-semibold text-[#292522]">
+                                Selamat datang kembali,
                                 {{ Auth::user()->name }}
-                            </span>
+                            </h2>
 
-                        </p>
+                        </div>
 
                     </div>
 
-
+                    {{-- Bagian kanan --}}
                     <div class="flex items-center gap-3">
 
-                        <span class="hidden rounded-full border border-[#E1D5C8] bg-white px-4 py-2 text-xs font-semibold text-[#6B4F3A] sm:inline-flex">
-                            {{ ucfirst(Auth::user()->role?->slug ?? 'User') }}
+                        <span class="rounded-xl border border-[#E1D5C8] bg-white px-5 py-2 text-sm font-semibold text-[#6B4F3A]">
+                            {{ ucfirst(Auth::user()->role->slug) }}
                         </span>
 
-
                         <form method="POST" action="{{ route('logout') }}">
-
                             @csrf
 
-                            <button type="submit"
-                                    class="rounded-xl border border-[#E1D5C8] bg-white px-4 py-2 text-sm font-semibold text-[#6B4F3A] transition hover:border-[#C68B59] hover:bg-[#C68B59] hover:text-white">
+                            <button
+                                class="rounded-xl border border-[#E1D5C8] bg-white px-5 py-2 text-sm font-semibold text-[#6B4F3A] transition hover:bg-[#C68B59] hover:text-white">
 
                                 Logout
 
@@ -482,7 +526,7 @@
 
 
             {{-- CONTENT --}}
-            <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 xl:px-8">
+            <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
 
                 @yield('content')
 
@@ -494,6 +538,31 @@
 
 
     {{-- PAGE SCRIPTS --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            if (toggle && sidebar) {
+                toggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('-translate-x-full');
+
+                    if (overlay) {
+                        overlay.classList.toggle('hidden');
+                    }
+                });
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', function () {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                });
+            }
+        });
+    </script>
+
     @stack('scripts')
 
 </body>

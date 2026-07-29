@@ -214,7 +214,10 @@
 
                   <p class="font-bold text-[#6B4F3A]">
 
-                    Rp {{ number_format($transaction->total, 0, ',', '.') }}
+                    <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                      <span class="mr-1">Rp</span>
+                      <span>{{ number_format($transaction->total, 0, ',', '.') }}</span>
+                    </span>
 
                   </p>
 

@@ -359,17 +359,27 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        $product->update([
-            'is_active' => ! $product->is_active,
-        ]);
+        // Cek apakah produk pernah dipakai transaksi
+        if ($product->transactionItems()->exists()) {
 
-        $message = $product->is_active
-            ? 'Produk berhasil diaktifkan.'
-            : 'Produk berhasil dinonaktifkan.';
+            $product->update([
+                'is_active' => false,
+            ]);
+
+            return redirect()
+                ->route('admin.products.index')
+                ->with(
+                    'warning',
+                    'Produk sudah pernah digunakan pada transaksi sehingga tidak dapat dihapus. Produk dinonaktifkan.'
+                );
+        }
+
+        // Jika belum pernah dipakai transaksi
+        $product->delete();
 
         return redirect()
             ->route('admin.products.index')
-            ->with('success', $message);
+            ->with('success', 'Produk berhasil dihapus.');
     }
 
 
@@ -381,18 +391,21 @@ class ProductController extends Controller
 
     public function barcode(Product $product)
     {
-        $generator = new \Picqer\Barcode\BarcodeGeneratorSVG();
+        // Buat barcode otomatis jika masih kosong
+        if (empty($product->barcode)) {
+            $product->barcode = 'BRG' . str_pad($product->id, 8, '0', STR_PAD_LEFT);
+            $product->save();
+        }
+
+        $generator = new BarcodeGeneratorSVG();
 
         $barcode = $generator->getBarcode(
-            $product->barcode,
-            $generator::TYPE_EAN_13
+            (string) $product->barcode,
+            $generator::TYPE_CODE_128
         );
 
         return response($barcode)
-            ->header(
-                'Content-Type',
-                'image/svg+xml'
-            );
+            ->header('Content-Type', 'image/svg+xml');
     }
 
 
@@ -409,22 +422,17 @@ class ProductController extends Controller
     {
         $generator = new \Picqer\Barcode\BarcodeGeneratorSVG();
 
+        if (empty($product->barcode)) {
+            $product->barcode = 'BRG' . str_pad($product->id, 8, '0', STR_PAD_LEFT);
+            $product->save();
+        }
+
         $barcode = $generator->getBarcode(
-            $product->barcode,
-            $generator::TYPE_EAN_13
+            (string) $product->barcode,
+            $generator::TYPE_CODE_128
         );
 
-        $products = collect(
-            array_fill(0, 24, [
-                'product' => $product,
-                'barcode' => $barcode,
-            ])
-        );
-
-        return view(
-            'admin.products.print-barcode',
-            compact('products')
-        );
+        return view('admin.products.print-barcode', compact('product', 'barcode'));
     }
 
 
@@ -440,49 +448,28 @@ class ProductController extends Controller
 
         $products = Product::where('is_active', true)
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(function ($product) use ($generator) {
 
-        $products = $products->map(function ($product) use ($generator) {
+                // Jika barcode kosong, buat barcode otomatis
+                if (empty($product->barcode)) {
+                    $product->barcode = 'BRG' . str_pad($product->id, 8, '0', STR_PAD_LEFT);
+                    $product->save();
+                }
 
-            $barcode = $this->generateEan13($product);
+                return [
+                    'product' => $product,
+                    'barcode' => $generator->getBarcode(
+                        (string) $product->barcode,
+                        $generator::TYPE_CODE_128
+                    ),
+                    'barcode_number' => $product->barcode,
+                ];
+            });
 
-            return [
-                'product' => $product,
-                'barcode' => $generator->getBarcode(
-                    $barcode,
-                    $generator::TYPE_EAN_13
-                ),
-                'barcode_number' => $barcode,
-            ];
-
-        });
-
-        return view('admin.products.print-barcodes', compact('products'));
-    }
-
-
-
-    private function generateEan13(Product $product): string
-    {
-        $base = str_pad(
-            (string) $product->id,
-            12,
-            '0',
-            STR_PAD_LEFT
+        return view(
+            'admin.products.print-barcodes',
+            compact('products')
         );
-
-        $digits = str_split($base);
-
-        $sum = 0;
-
-        foreach ($digits as $index => $digit) {
-
-            $sum += ((int) $digit) * ($index % 2 === 0 ? 1 : 3);
-
-        }
-
-        $checkDigit = (10 - ($sum % 10)) % 10;
-
-        return $base . $checkDigit;
     }
 }

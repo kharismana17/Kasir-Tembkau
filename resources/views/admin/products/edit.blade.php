@@ -555,7 +555,7 @@
         if (categoryLower === 'tembakau') {
           return {
             stock: 'gram',
-            selling: 'ons'
+            selling: 'gram'
           };
         }
 

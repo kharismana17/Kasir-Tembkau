@@ -124,7 +124,7 @@
 
 
 {{-- SUMMARY --}}
-<div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+<div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
 
   {{-- TOTAL TRANSACTIONS --}}
   <div class="rounded-3xl border border-[#ded9d0] bg-white p-6 shadow-sm">
@@ -177,7 +177,10 @@
         </p>
 
         <p class="mt-5 text-3xl font-bold tracking-tight text-[#b47727]">
-          Rp {{ number_format($totalSales, 0, ',', '.') }}
+          <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+            <span class="mr-1">Rp</span>
+            <span>{{ number_format($totalSales, 0, ',', '.') }}</span>
+          </span>
         </p>
       </div>
 
@@ -271,7 +274,10 @@
         </p>
 
         <p class="mt-5 text-3xl font-bold tracking-tight text-[#17201c]">
-          Rp {{ number_format($averageTransaction, 0, ',', '.') }}
+          <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+            <span class="mr-1">Rp</span>
+            <span>{{ number_format($averageTransaction, 0, ',', '.') }}</span>
+          </span>
         </p>
       </div>
 
@@ -303,7 +309,7 @@
 
 
 {{-- PROFIT SUMMARY --}}
-<div class="grid gap-5 md:grid-cols-3">
+<div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 
   {{-- CAPITAL --}}
   <div class="rounded-3xl border border-[#ded9d0] bg-white p-6 shadow-sm">
@@ -313,7 +319,10 @@
     </p>
 
     <p class="mt-5 text-3xl font-bold text-[#17201c]">
-      Rp {{ number_format($totalCapital, 0, ',', '.') }}
+      <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+        <span class="mr-1">Rp</span>
+        <span>{{ number_format($totalCapital, 0, ',', '.') }}</span>
+      </span>
     </p>
 
     <p class="mt-3 text-sm text-slate-500">
@@ -331,7 +340,10 @@
     </p>
 
     <p class="mt-5 text-3xl font-bold text-[#8a5b1e]">
-      Rp {{ number_format($totalProfit, 0, ',', '.') }}
+      <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+        <span class="mr-1">Rp</span>
+        <span>{{ number_format($totalProfit, 0, ',', '.') }}</span>
+      </span>
     </p>
 
     <p class="mt-3 text-sm text-[#9a6b2a]">
@@ -362,7 +374,7 @@
 
 
 {{-- CASHIER AND UNIT --}}
-<div class="grid gap-5 xl:grid-cols-2">
+<div class="grid gap-5 grid-cols-1 xl:grid-cols-2">
 
   {{-- CASHIER --}}
   <section class="rounded-3xl border border-[#ded9d0] bg-white p-6 shadow-sm">
@@ -410,11 +422,17 @@
               </td>
 
               <td class="px-4 py-4 font-semibold text-[#b47727]">
-                Rp {{ number_format($cashier['sales'], 0, ',', '.') }}
+                <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                  <span class="mr-1">Rp</span>
+                  <span>{{ number_format($cashier['sales'], 0, ',', '.') }}</span>
+                </span>
               </td>
 
               <td class="px-4 py-4 text-slate-500">
-                Rp {{ number_format($cashier['average'], 0, ',', '.') }}
+                <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                  <span class="mr-1">Rp</span>
+                  <span>{{ number_format($cashier['average'], 0, ',', '.') }}</span>
+                </span>
               </td>
 
             </tr>
@@ -483,7 +501,10 @@
               </td>
 
               <td class="px-4 py-4 font-semibold text-[#b47727]">
-                Rp {{ number_format($unit['sales'], 0, ',', '.') }}
+                <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                  <span class="mr-1">Rp</span>
+                  <span>{{ number_format($unit['sales'], 0, ',', '.') }}</span>
+                </span>
               </td>
 
               <td class="px-4 py-4 text-slate-500">
@@ -491,7 +512,10 @@
               </td>
 
               <td class="px-4 py-4 text-slate-500">
-                Rp {{ number_format($unit['average'], 0, ',', '.') }}
+                <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                  <span class="mr-1">Rp</span>
+                  <span>{{ number_format($unit['average'], 0, ',', '.') }}</span>
+                </span>
               </td>
 
             </tr>
@@ -570,7 +594,10 @@
             </td>
 
             <td class="px-4 py-4 font-semibold text-[#b47727]">
-              Rp {{ number_format($activity['sales'], 0, ',', '.') }}
+              <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                <span class="mr-1">Rp</span>
+                <span>{{ number_format($activity['sales'], 0, ',', '.') }}</span>
+              </span>
             </td>
 
           </tr>
@@ -610,7 +637,7 @@
     </p>
   </div>
 
-  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 
     @forelse($paymentSummary as $method => $summary)
 
@@ -621,7 +648,10 @@
         </p>
 
         <p class="mt-3 text-2xl font-bold text-[#b47727]">
-          Rp {{ number_format($summary['total'], 0, ',', '.') }}
+          <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+            <span class="mr-1">Rp</span>
+            <span>{{ number_format($summary['total'], 0, ',', '.') }}</span>
+          </span>
         </p>
 
         <p class="mt-2 text-sm text-slate-500">
@@ -689,11 +719,11 @@
         <div class="min-w-0 flex-1">
 
           <p class="truncate text-sm font-bold text-[#17201c]">
-            {{ $item['product']?->name ?? 'Produk tidak ditemukan' }}
+            {{ $item['product_name'] ?? 'Produk telah dihapus' }}
           </p>
 
           <p class="mt-1 text-sm text-slate-500">
-            {{ $item['qty'] }} {{ $item['product']?->unit ?: 'pcs' }} terjual
+            {{ $item['qty'] }} {{ $item['product_unit'] ?? 'pcs' }} terjual
           </p>
 
         </div>
@@ -701,7 +731,10 @@
         <div class="text-right">
 
           <p class="text-sm font-bold text-[#b47727]">
-            Rp {{ number_format($item['sales'], 0, ',', '.') }}
+            <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+              <span class="mr-1">Rp</span>
+              <span>{{ number_format($item['sales'], 0, ',', '.') }}</span>
+            </span>
           </p>
 
           <p class="mt-1 text-xs text-slate-500">
@@ -795,7 +828,10 @@
             </td>
 
             <td class="px-4 py-4 text-right font-bold text-[#b47727]">
-              Rp {{ number_format($transaction->total, 0, ',', '.') }}
+              <span class="inline-flex items-center justify-end whitespace-nowrap text-right shrink-0 min-w-fit">
+                <span class="mr-1">Rp</span>
+                <span>{{ number_format($transaction->total, 0, ',', '.') }}</span>
+              </span>
             </td>
 
             <td class="px-4 py-4 text-right">
@@ -833,7 +869,6 @@
   </div>
 
 </div>
-```
 
   </div>
 @endsection

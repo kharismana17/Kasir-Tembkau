@@ -566,7 +566,7 @@ function getUnitsByCategory(categoryName) {
 
         return {
             stock: 'gram',
-            selling: 'ons'
+            selling: 'gram'
         };
 
     }

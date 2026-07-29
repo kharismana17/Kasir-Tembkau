@@ -14,11 +14,11 @@
         Master Data
       </p>
 
-      <h1 class="mt-2 text-3xl font-semibold tracking-tight text-[#292522]">
+      <h1 class="mt-2 text-xl font-semibold tracking-tight text-[#292522] sm:text-2xl lg:text-3xl">
         Produk
       </h1>
 
-      <p class="mt-2 text-sm text-[#8A8179]">
+      <p class="mt-2 text-sm text-[#8A8179] sm:text-base">
         Kelola produk dan stok toko tembakau.
       </p>
     </div>
@@ -115,7 +115,7 @@
   <form
     method="GET"
     action="{{ route('admin.products.index') }}"
-    class="grid gap-4 lg:grid-cols-3"
+    class="grid gap-4 grid-cols-1 lg:grid-cols-3"
   >
 
     {{-- SEARCH --}}
@@ -195,18 +195,18 @@
 
 
     {{-- ACTION --}}
-    <div class="flex items-end gap-3 lg:col-span-3">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end lg:col-span-3">
 
       <button
         type="submit"
-        class="rounded-xl bg-[#292522] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#403A36]"
+        class="w-full rounded-xl bg-[#292522] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#403A36] sm:w-auto"
       >
         Terapkan Filter
       </button>
 
       <a
         href="{{ route('admin.products.index') }}"
-        class="rounded-xl border border-[#E1D5C8] bg-white px-5 py-3 text-sm font-semibold text-[#6B4F3A] transition hover:border-[#C68B59] hover:bg-[#F4EAE1]"
+        class="w-full rounded-xl border border-[#E1D5C8] bg-white px-5 py-3 text-center text-sm font-semibold text-[#6B4F3A] transition hover:border-[#C68B59] hover:bg-[#F4EAE1] sm:w-auto"
       >
         Reset
       </a>
@@ -378,7 +378,7 @@
             {{-- ACTION --}}
             <td class="px-6 py-5">
 
-              <div class="flex justify-end gap-2">
+              <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
 
                   <a
                       href="{{ route('admin.products.print-barcode', $product) }}"

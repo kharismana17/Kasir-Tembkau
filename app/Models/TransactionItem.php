@@ -16,6 +16,12 @@ class TransactionItem extends Model
         'price',
         'discount',
         'subtotal',
+        'buy_price',
+        'sell_price',
+        'product_name',
+        'product_unit',
+        'product_category',
+        'product_barcode',
     ];
 
     protected $casts = [
@@ -23,6 +29,8 @@ class TransactionItem extends Model
         'price' => 'decimal:2',
         'discount' => 'decimal:2',
         'subtotal' => 'decimal:2',
+        'buy_price' => 'decimal:2',
+        'sell_price' => 'decimal:2',
     ];
 
     public function transaction()

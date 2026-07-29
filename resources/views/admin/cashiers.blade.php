@@ -67,7 +67,7 @@
 
           <div>
             <p class="text-xs font-bold uppercase tracking-[0.18em] text-[#A3978D]">
-              Total Transaksi
+              Total Transaksi Hari Ini
             </p>
 
             <p class="mt-4 text-4xl font-bold tracking-tight text-[#292522]">

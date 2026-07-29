@@ -44,7 +44,7 @@ class TransactionVoidController extends Controller
                 // Determine stock restoration amount (mirror resolveStockReduction)
                 if (($product->stock_unit ?? '') === 'gram') {
                     $restore = (int) round($item->qty);
-                } elseif ($product->selling_unit === 'ons') {
+                } elseif ($product->selling_unit === 'gram') {
                     $restore = (int) round($item->qty * 100);
                 } else {
                     $restore = (int) round($item->qty);

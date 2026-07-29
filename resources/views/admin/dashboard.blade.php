@@ -12,7 +12,7 @@
           Overview
         </p>
 
-        <h1 class="mt-2 text-3xl font-semibold tracking-tight text-[#292522]">
+        <h1 class="mt-2 text-xl font-semibold tracking-tight text-[#292522] sm:text-2xl lg:text-3xl">
           Halo, {{ Auth::user()->name }} 👋
         </h1>
 
@@ -28,7 +28,7 @@
 
 
     {{-- SUMMARY --}}
-    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
 
       {{-- SALES --}}
       <article class="relative overflow-hidden rounded-3xl bg-[#292522] p-6 text-white shadow-lg shadow-black/10 xl:col-span-1">
@@ -115,7 +115,7 @@
 
 
     {{-- CHART + BEST SELLING --}}
-    <div class="grid gap-6 xl:grid-cols-3">
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-3">
 
       {{-- CHART --}}
       <section class="rounded-3xl border border-[#E7E1D9] bg-white p-6 shadow-sm xl:col-span-2">
@@ -212,7 +212,7 @@
 
 
     {{-- TRANSACTIONS + LOW STOCK --}}
-    <div class="grid gap-6 xl:grid-cols-2">
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
 
       {{-- RECENT TRANSACTIONS --}}
       <section class="rounded-3xl border border-[#E7E1D9] bg-white p-6 shadow-sm">

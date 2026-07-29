@@ -54,7 +54,7 @@ class ReportController extends Controller
 
         $totalTransactions = $transactions->count();
 
-        $transactionItems = TransactionItem::with('product')
+        $transactionItems = TransactionItem::query()
             ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
                 $query
                     ->where('status', 'completed')
@@ -67,7 +67,7 @@ class ReportController extends Controller
 
         $itemsByUnit = $transactionItems
             ->groupBy(function ($item) {
-                return $item->product?->unit ?: 'pcs';
+                return $item->product_unit ?? $item->product?->unit ?? 'pcs';
             })
             ->map(function ($items, $unit) {
                 return [
@@ -91,7 +91,11 @@ class ReportController extends Controller
         */
 
         $totalCapital = $transactionItems->sum(function ($item) {
-            return $item->qty * $item->product->buy_price;
+            $buyPrice = $item->buy_price
+                ?? $item->product?->buy_price
+                ?? 0;
+
+            return (float) $item->qty * (float) $buyPrice;
         });
 
         $totalProfit = $totalSales - $totalCapital;
@@ -174,7 +178,7 @@ class ReportController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $bestSellingProducts = TransactionItem::with('product')
+        $bestSellingProducts = TransactionItem::query()
             ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
                 $query
                     ->where('status', 'completed')
@@ -184,10 +188,19 @@ class ReportController extends Controller
                     ]);
             })
             ->get()
-            ->groupBy('product_id')
+            ->groupBy(function ($item) {
+                return $item->product_id ?? ($item->product_name ?? 'deleted');
+            })
             ->map(function ($items) {
+                $firstItem = $items->first();
+                $productName = $firstItem->product_name
+                    ?? $firstItem->product?->name
+                    ?? 'Produk telah dihapus';
+
                 return [
-                    'product' => $items->first()->product,
+                    'product' => $firstItem->product,
+                    'product_name' => $productName,
+                    'product_unit' => $firstItem->product_unit ?? $firstItem->product?->unit ?? 'pcs',
                     'qty' => $items->sum('qty'),
                     'sales' => $items->sum('subtotal'),
                 ];

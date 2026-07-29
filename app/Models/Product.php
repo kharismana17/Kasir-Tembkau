@@ -60,7 +60,7 @@ class Product extends Model
 
         if ($categoryName === 'tembakau') {
             $stockUnit = 'gram';
-            $sellingUnit = 'ons';
+            $sellingUnit = 'gram';
         } elseif (
             strpos($categoryName, 'pack') !== false ||
             strpos($categoryName, 'kemasan') !== false
@@ -111,25 +111,15 @@ class Product extends Model
     public static function generateUniqueBarcode(): string
     {
         do {
-            // Prefix internal toko: 899
-            $barcode = '899' . str_pad(
-                (string) random_int(0, 999999999),
+
+            $base = '899' . str_pad(
+                random_int(0, 999999999),
                 9,
                 '0',
                 STR_PAD_LEFT
             );
 
-            $digits = str_split($barcode);
-
-            $sum = 0;
-
-            foreach ($digits as $index => $digit) {
-                $sum += ((int) $digit) * ($index % 2 === 0 ? 1 : 3);
-            }
-
-            $checkDigit = (10 - ($sum % 10)) % 10;
-
-            $barcode .= $checkDigit;
+            $barcode = $base . self::calculateEan13CheckDigit($base);
 
         } while (self::where('barcode', $barcode)->exists());
 

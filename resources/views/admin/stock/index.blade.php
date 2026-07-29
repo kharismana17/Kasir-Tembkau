@@ -219,7 +219,7 @@
 
                   @if ($product->stock <= $product->stock_min)
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
 
                       <span class="inline-flex items-center rounded-lg bg-[#FFF3F0] px-2.5 py-1 text-sm font-bold text-[#A33A2B]">
                         {{ $product->stock }}
