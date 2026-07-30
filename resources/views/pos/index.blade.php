@@ -7,1385 +7,1280 @@
   @php
     $gramTotal = collect($cart)->where('is_tembakau', true)->sum('qty');
     $itemTotal = collect($cart)->where('is_tembakau', false)->sum('qty');
+    $totalItems = count($cart);
   @endphp
 
   <div class="space-y-6">
 
-    <section class="rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-5 shadow-sm sm:p-6">
-      <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+    <section class="rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-6 shadow-sm">
+      <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div class="max-w-2xl">
-          <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">
-            Point of Sale
-          </p>
-          <h1 class="mt-2 text-2xl font-bold tracking-tight text-[#292522] sm:text-3xl">
-            Kasir
-          </h1>
-          <p class="mt-2 text-sm text-[#6B4F3A]">
-            Pilih produk, pindahkan ke keranjang, lalu selesaikan transaksi dengan checkout yang sudah ada.
-          </p>
+          <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">Point of Sale</p>
+          <h1 class="mt-2 text-3xl font-bold tracking-tight text-[#292522]">Kasir Toko Tembakau</h1>
+          <p class="mt-2 text-sm leading-6 text-[#6B4F3A]">Semua produk ditambahkan melalui scan barcode. Tembakau membutuhkan input berat sebelum masuk ke keranjang.</p>
         </div>
 
-        <div class="grid w-full gap-3 grid-cols-1 sm:grid-cols-3 lg:min-w-[420px] lg:flex-1">
-          <div class="rounded-2xl border border-[#E7E1D9] bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#6B4F3A]">
-              Item Keranjang
-            </p>
-            <p class="mt-2 text-2xl font-bold text-[#292522]">
-              @php
-                  $gramTotal = collect($cart)->where('is_tembakau', true)->sum('qty');
-                  $itemTotal = collect($cart)->where('is_tembakau', false)->sum('qty');
-              @endphp
-              @if($gramTotal > 0)
-                  {{ $gramTotal }} gram
-              @endif
-
-              @if($itemTotal > 0)
-                  @if($gramTotal > 0)
-                      +
-                  @endif
-                  {{ $itemTotal }} item
-              @endif
-            </p>
+        <div class="grid w-full gap-3 grid-cols-1 sm:grid-cols-2 lg:w-auto lg:grid-cols-2">
+          <div class="rounded-2xl border border-[#E7E1D9] bg-white p-4 shadow-sm">
+            <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#6B4F3A]">Item dalam Keranjang</p>
+            <p id="topSummaryItems" class="mt-2 text-2xl font-bold text-[#292522]">{{ $totalItems }}</p>
           </div>
-
-          <div class="rounded-2xl border border-[#E7E1D9] bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#6B4F3A]">
-              Subtotal
-            </p>
-            <p class="mt-2 text-lg font-bold text-[#8A5B1E]">
-              Rp {{ number_format($subtotal, 0, ',', '.') }}
-            </p>
-          </div>
-
-          <div class="rounded-2xl border border-[#E7E1D9] bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#6B4F3A]">
-              Produk Aktif
-            </p>
-            <p class="mt-2 text-2xl font-bold text-[#292522]">
-              {{ $products->count() }}
-            </p>
+          <div class="rounded-2xl border border-[#E7E1D9] bg-white p-4 shadow-sm">
+            <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#6B4F3A]">Subtotal</p>
+            <p id="topSummarySubtotal" class="mt-2 text-2xl font-bold text-[#8A5B1E]">Rp {{ number_format($subtotal, 0, ',', '.') }}</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="rounded-[28px] border border-[#E7E1D9] bg-[#F4EFE6] p-5 shadow-sm sm:p-6">
-      <div class="flex items-start gap-4">
-        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#292522] text-[#C68B59] shadow-sm">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6v12M7 6v12M10 6v12M14 6v12M17 6v12M20 6v12" />
-          </svg>
+    <section class="rounded-[28px] border border-[#E7E1D9] bg-[#F4EFE6] p-6 shadow-sm">
+      <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#292522] text-[#C68B59]">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6v12M7 6v12M10 6v12M14 6v12M17 6v12M20 6v12" /></svg>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-[#292522]">Scan Barcode</p>
+            <p class="mt-1 text-xs text-[#6B4F3A]">Scan atau ketik barcode dan tekan Enter. Jaga fokus input untuk transaksi cepat.</p>
+          </div>
         </div>
 
-        <div class="flex-1">
-          <h2 class="text-lg font-bold text-[#292522]">
-            Scan Barcode
-          </h2>
-          <p class="mt-1 truncate text-xs text-gray-500">
-            Gunakan barcode scanner atau ketik barcode secara manual untuk menambahkan produk ke keranjang.
-          </p>
+        <button id="openCameraScan" type="button" class="inline-flex items-center justify-center rounded-2xl bg-[#292522] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#3A352F]">Scan dengan Kamera</button>
+      </div>
 
-          <div class="mt-4 flex flex-wrap gap-3">
-              <button
-                  type="button"
-                  id="closeCamera"
-                  class="hidden w-full rounded-xl bg-red-600 px-4 py-3 text-white font-semibold sm:w-auto">
-                  Tutup Kamera
-              </button>
+      <div class="mt-6">
+        <label for="barcode_input" class="mb-2 block text-sm font-semibold text-[#292522]">Barcode Produk</label>
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <input id="barcode_input" name="barcode" type="text" placeholder="Scan barcode atau ketik lalu tekan Enter..." class="w-full rounded-2xl border border-[#D8D3C9] bg-white px-4 py-4 text-sm text-[#292522] outline-none transition duration-200 hover:border-[#B8B1A4] focus:border-[#292522] focus:ring-4 focus:ring-[#292522]/10" autocomplete="off" autofocus>
+        </div>
+        <div id="barcode_message" class="mt-3 hidden rounded-2xl p-3 text-sm"></div>
+      </div>
+    </section>
+
+    <div class="grid gap-6 lg:grid-cols-[1.75fr_1.05fr] lg:min-h-[calc(100vh-170px)]">
+      <section
+      class="flex flex-col
+            rounded-[28px]
+            border border-[#E7E1D9]
+            bg-[#FBF9F6]
+            p-6
+            shadow-sm
+            h-[calc(100vh-180px)]">
+        <div class="sticky top-0 z-10 mb-5 bg-[#FBF9F6] pb-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">Daftar Transaksi</p>
+              <h2 class="mt-1 text-xl font-bold text-[#292522]">Item yang Masuk</h2>
+            </div>
+            <p class="text-sm text-[#6B4F3A]">Hanya daftar transaksi. Produk dari scan barcode.</p>
           </div>
+        </div>
 
-          <div id="cameraContainer" class="hidden mt-5">
-              <video
-                  id="barcodeVideo"
-                  class="w-full rounded-2xl border border-[#D8D3C9]"
-              ></video>
-          </div>
+        <div id="cartItemsContainer"
+          class="flex-1 overflow-y-auto pr-2 pb-4">
+          @include('pos.partials.cart-items', ['cart' => $cart])
+        </div>
+      </section>
 
-          <div class="mt-4">
-            <label for="barcode_input" class="mb-2 block text-sm font-semibold text-[#292522]">
-              Barcode Produk
-            </label>
-            <div class="flex flex-col gap-3 sm:flex-row">
-              <input
-                id="barcode_input"
-                type="text"
-                placeholder="Scan barcode atau ketik dan tekan Enter..."
-                class="w-full rounded-2xl border border-[#D8D3C9] bg-white px-4 py-3.5 text-sm text-[#292522] outline-none transition duration-200 hover:border-[#B8B1A4] focus:border-[#292522] focus:ring-4 focus:ring-[#292522]/10"
-                autocomplete="off"
-                autofocus
-              >
+      <div class="space-y-6 lg:min-h-[calc(100vh-170px)] lg:flex lg:flex-col">
+        <section class="rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-6 shadow-sm">
+          <div class="flex h-full min-h-0 flex-col">
+            <div class="mb-5">
+              <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">Ringkasan</p>
+              <h2 class="mt-1 text-xl font-bold text-[#292522]">Total Pembayaran</h2>
+            </div>
 
-              <button
-                id="openCameraScan"
-                type="button"
-                class="inline-flex items-center justify-center rounded-2xl bg-[#292522] px-4 py-3 text-sm font-bold text-white transition duration-200 hover:bg-[#3A352F]"
-              >
-                Scan dengan Kamera
-              </button>
+            <div class="space-y-3">
+              <div class="rounded-2xl bg-[#F4EFE6] p-4"><div class="flex items-center justify-between"><span class="text-sm font-semibold text-[#6B4F3A]">Jumlah Item</span><span id="summaryItems" class="text-lg font-bold text-[#292522]">{{ $totalItems }}</span></div></div>
+              <div class="rounded-2xl bg-[#F4EFE6] p-4"><div class="flex items-center justify-between"><span class="text-sm font-semibold text-[#6B4F3A]">Total Gram Tembakau</span><span id="summaryGram" class="text-lg font-bold text-[#292522]">{{ $gramTotal }} gram</span></div></div>
+              <div class="rounded-2xl bg-[#F4EFE6] p-4"><div class="flex items-center justify-between"><span class="text-sm font-semibold text-[#6B4F3A]">Subtotal</span><span id="summarySubtotal" class="text-lg font-bold text-[#8A5B1E]">Rp {{ number_format($subtotal, 0, ',', '.') }}</span></div></div>
+              <div class="rounded-[22px] bg-[#292522] p-4 shadow-sm"><div class="flex items-center justify-between"><span class="text-sm font-semibold text-white">Grand Total</span><div class="flex items-center gap-1 text-2xl font-bold text-[#D89A5B]"><span class="text-lg">Rp</span><span id="summaryGrandTotal">{{ number_format($grandTotal, 0, ',', '.') }}</span></div></div></div>
+            </div>
+
+            <div class="mt-auto border-t border-[#E7E1D9] pt-4">
+              @if ($cartCount > 0)
+                <div class="flex flex-col gap-3 sm:flex-row">
+                  <form action="{{ route('saved-orders.save') }}" method="POST" class="flex-1">@csrf<button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl border border-[#292522] bg-white px-4 py-3 text-sm font-bold text-[#292522] transition hover:bg-gray-100">Simpan</button></form>
+                  <a href="{{ route('pos.checkout.page') }}" id="openCheckoutButton" class="inline-flex flex-1 items-center justify-center rounded-2xl bg-[#292522] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#302F2A]">Bayar</a>
+                </div>
+              @else
+                <div class="flex flex-col gap-3 sm:flex-row">
+                  <button disabled class="inline-flex w-full items-center justify-center rounded-2xl border border-gray-300 bg-gray-200 px-4 py-3 text-sm font-bold text-gray-500 cursor-not-allowed">Simpan</button>
+                  <button disabled class="inline-flex w-full items-center justify-center rounded-2xl bg-gray-300 px-4 py-3 text-sm font-bold text-white cursor-not-allowed">Bayar</button>
+                </div>
+              @endif
             </div>
           </div>
+        </section>
 
-          <div id="barcode_message" class="mt-3 hidden rounded-2xl p-3 text-sm"></div>
+        <section class="rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-6 shadow-sm">
+          <div class="mb-5">
+            <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">ORDER TERSIMPAN</p>
+            <h2 class="mt-1 text-xl font-bold text-[#292522]">Order Tersimpan</h2>
+          </div>
+
+          @if ($savedOrders->isEmpty())
+            <div class="rounded-2xl bg-white p-6 text-center text-sm font-medium text-[#6B4F3A]">Tidak ada order yang disimpan.</div>
+          @else
+            <div class="space-y-4">
+              @foreach ($savedOrders as $savedOrder)
+                <div class="rounded-[22px] border border-[#E7E1D9] bg-white p-4 shadow-sm">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <p class="text-sm font-semibold text-[#292522]">🧾 Hold #{{ $savedOrder->id }}</p>
+                      <p class="mt-1 text-xs text-[#6B4F3A]">{{ $savedOrder->total_items }} Barang • Rp {{ number_format($savedOrder->total, 0, ',', '.') }}</p>
+                    </div>
+                    <div class="flex gap-2">
+                      <form method="POST" action="{{ route('saved-orders.load', ['savedOrder' => $savedOrder->id]) }}">
+                        @csrf
+                        <button type="submit" class="rounded-2xl bg-[#292522] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#3A352F]">Load</button>
+                      </form>
+                      <form method="POST" action="{{ route('saved-orders.delete', ['savedOrder' => $savedOrder->id]) }}">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="rounded-2xl border border-[#E7E1D9] bg-white px-3 py-2 text-xs font-bold text-[#292522] transition hover:bg-[#F4EFE6]">Hapus</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              @endforeach
+            </div>
+          @endif
+        </section>
+      </div>
+    </div>
+
+    <div id="checkoutModal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-black/60 p-0 sm:p-4">
+      <div class="relative flex h-full w-full max-w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-[90vh] sm:max-w-3xl lg:max-w-5xl sm:rounded-[28px]">
+        <div class="sticky top-0 z-10 border-b border-[#E7E1D9] bg-white px-5 py-4 sm:px-6 sm:py-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">Checkout</p>
+              <h3 class="mt-1 text-xl font-bold text-[#292522]">Checkout Pembayaran</h3>
+            </div>
+            <button id="closeCheckoutModal" type="button" class="rounded-xl bg-[#F4EFE6] px-3 py-2 text-xs font-bold text-[#8A5B1E] transition hover:bg-[#E8DFD0]">X</button>
+          </div>
+        </div>
+        <div class="flex-1 overflow-y-auto px-5 py-4 sm:px-6 sm:py-5">
+          <div class="grid gap-5 md:grid-cols-[7fr_5fr]">
+            <section class="rounded-xl border border-[#E7E1D9] bg-[#FBF9F6] p-4 shadow-sm">
+              <div class="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">Produk</p>
+                  <h2 class="mt-1 text-lg font-bold text-[#292522]">Daftar Item</h2>
+                </div>
+                <span class="text-sm font-semibold text-[#6B4F3A]">{{ $totalItems }} item</span>
+              </div>
+
+              <div class="space-y-3">
+                @forelse ($cart as $item)
+                  @php
+                    $isTembakauItem = (bool) ($item['is_tembakau'] ?? false);
+                    $itemUnitLabel = $isTembakauItem ? 'gram' : ($item['unit'] ?? 'pcs');
+                    $itemLineTotal = $isTembakauItem
+                      ? $item['price'] * ($item['qty'] / 100)
+                      : $item['price'] * $item['qty'];
+                  @endphp
+                  <div class="rounded-xl border border-[#E7E1D9] bg-white p-4 shadow-sm">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div class="min-w-0">
+                        <p class="text-base font-bold text-[#292522] truncate">{{ $item['name'] }}</p>
+                        <p class="mt-2 text-sm text-[#6B4F3A]">{{ $item['qty'] }} {{ $itemUnitLabel }} @if(!empty($item['purchase_type'])) • {{ ucfirst($item['purchase_type']) }} @endif</p>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-sm font-semibold text-[#6B4F3A]">Subtotal</p>
+                        <p class="mt-1 text-base font-bold text-[#8A5B1E]">Rp {{ number_format($itemLineTotal, 0, ',', '.') }}</p>
+                      </div>
+                    </div>
+                  </div>
+                @empty
+                  <div class="rounded-xl border border-[#E7E1D9] bg-white p-6 text-center text-sm text-[#6B4F3A]">Keranjang kosong.</div>
+                @endforelse
+              </div>
+            </section>
+
+            <section class="rounded-xl border border-[#E7E1D9] bg-[#FBF9F6] p-4 shadow-sm">
+              <div class="mb-4">
+                <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">Pembayaran</p>
+                <h2 class="mt-1 text-lg font-bold text-[#292522]">Metode Pembayaran</h2>
+              </div>
+
+              <form id="checkoutForm" method="POST" action="{{ route('pos.checkout') }}" class="space-y-5">
+                @csrf
+                <input type="hidden" id="payment_method" name="payment_method" value="cash">
+                <input type="hidden" id="checkoutTaxPercent" value="{{ $subtotal > 0 ? round(($taxAmount / $subtotal) * 100, 4) : 0 }}">
+                <input type="hidden" id="checkoutDiscountPercent" value="{{ $subtotal > 0 ? round(($discount / $subtotal) * 100, 4) : 0 }}">
+
+                <div id="checkoutTotalsPanel" class="rounded-2xl bg-white p-4 border border-[#E7E1D9] shadow-sm">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-sm text-[#6B4F3A]">Subtotal</span>
+                    <span id="checkoutSubtotalText" class="text-sm font-semibold text-[#292522]">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+                  </div>
+                  <div class="mt-3 flex items-center justify-between gap-2">
+                    <span class="text-sm text-[#6B4F3A]">Diskon</span>
+                    <span id="checkoutDiscountText" class="text-sm font-semibold text-[#292522]">Rp {{ number_format($discount, 0, ',', '.') }}</span>
+                  </div>
+                  <div class="mt-3 flex items-center justify-between gap-2">
+                    <span class="text-sm text-[#6B4F3A]">Pajak</span>
+                    <span id="checkoutTaxText" class="text-sm font-semibold text-[#292522]">Rp {{ number_format($taxAmount, 0, ',', '.') }}</span>
+                  </div>
+                  <div class="mt-4 rounded-2xl bg-[#F4EFE6] p-4">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-sm font-semibold text-[#6B4F3A]">Grand Total</span>
+                      <span id="checkoutGrandTotalText" class="text-lg font-bold text-[#8A5B1E]">Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                  @foreach ($paymentMethods as $paymentMethod)
+                    @php
+                      $methodType = strtolower(str_contains($paymentMethod->name, 'qris') ? 'qris' : (str_contains(strtolower($paymentMethod->name), 'tunai') ? 'cash' : 'other'));
+                    @endphp
+                    <label class="payment-method-card cursor-pointer rounded-xl border border-[#E7E1D9] bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md {{ $loop->first ? 'active' : '' }}" data-payment-type="{{ $methodType }}">
+                      <input
+                        type="radio"
+                        name="payment_method_id"
+                        value="{{ $paymentMethod->id }}"
+                        class="sr-only payment-method-radio"
+                        data-type="{{ $methodType }}"
+                        {{ $loop->first ? 'checked' : '' }}
+                      >
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                          <span class="payment-method-check hidden h-8 w-8 items-center justify-center rounded-full bg-[#2E7D32] text-white text-sm font-bold">✓</span>
+                          <span class="text-sm font-bold text-[#292522]">{{ $paymentMethod->name }}</span>
+                        </div>
+                        <span class="rounded-full bg-[#F4EFE6] px-3 py-1 text-[11px] font-bold text-[#8A5B1E]">
+                          {{ $paymentMethod->name }}
+                        </span>
+                      </div>
+                    </label>
+                  @endforeach
+                </div>
+
+                <div id="cashFields" class="space-y-4">
+                  <div id="paymentQuickActions" class="space-y-4">
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      <button id="exactAmountBtn" type="button" class="rounded-2xl border border-[#D8D3C9] bg-white px-4 py-3 text-sm font-semibold text-[#292522] transition hover:bg-[#F4EFE6]">Uang Pas</button>
+                    </div>
+                    <div class="space-y-2">
+                      <p class="text-sm font-semibold text-[#17201C]">Nominal Cepat</p>
+                      <div id="quickAmountsContainer" class="flex flex-wrap gap-2"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="paid_amount" class="mb-2 block text-sm font-semibold text-[#17201C]">Uang Dibayar</label>
+                    <input
+                      id="paid_amount"
+                      name="paid_amount"
+                      type="number"
+                      min="0"
+                      value="{{ old('paid_amount') ?? $grandTotal }}"
+                      required
+                      class="w-full rounded-2xl border border-[#D8D3C9] bg-[#FAF9F6] px-4 py-4 text-sm text-[#17201C] outline-none transition duration-200 focus:border-[#1B1B18] focus:bg-white focus:ring-4 focus:ring-[#1B1B18]/10"
+                      placeholder="Masukkan uang pembayaran"
+                    >
+                  </div>
+
+                  <div class="rounded-2xl bg-[#FAF9F6] px-4 py-4">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-bold text-[#6B4F3A]">Kembalian</span>
+                      <span id="changeAmount" class="text-lg font-bold text-[#8A5B1E]">Rp 0</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="qrisCard" class="hidden rounded-xl border border-[#E7E1D9] bg-[#FAF9F6] p-5 shadow-sm">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">QRIS</p>
+                      <h3 class="mt-1 text-lg font-bold text-[#292522]">Menunggu Pembayaran</h3>
+                    </div>
+                    <span class="rounded-full bg-[#F4EFE6] px-3 py-1 text-[11px] font-bold text-[#8A5B1E]">Status</span>
+                  </div>
+
+                  <div class="mt-4 flex items-center justify-center rounded-xl border border-dashed border-[#D8D3C9] bg-white p-6">
+                    <div class="flex h-40 w-40 items-center justify-center rounded-2xl bg-[#F4EFE6] text-center text-sm font-bold text-[#8A5B1E]">QR CODE</div>
+                  </div>
+
+                  <div class="mt-4 rounded-2xl bg-[#F4EFE6] px-4 py-3">
+                    <p class="text-sm font-bold text-[#8A5B1E]">Total Pembayaran</p>
+                    <p class="mt-1 text-lg font-bold text-[#292522]">Rp {{ number_format($grandTotal, 0, ',', '.') }}</p>
+                  </div>
+                </div>
+              </form>
+            </section>
+          </div>
+        </div>
+
+        <div class="sticky bottom-0 z-10 border-t border-[#E7E1D9] bg-white px-5 py-4 sm:px-6 sm:py-5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm font-semibold text-[#6B4F3A]">Grand Total</p>
+              <p class="text-2xl font-bold text-[#8A5B1E]">Rp {{ number_format($grandTotal, 0, ',', '.') }}</p>
+            </div>
+            <div class="flex flex-col gap-3 sm:flex-row">
+              <button id="closeCheckoutModal" type="button" class="rounded-2xl border border-[#D8D3C9] bg-white px-4 py-4 text-sm font-semibold text-[#6B4F3A] transition hover:bg-[#F4EFE6]">Batal</button>
+              <button id="checkoutSubmitBtn" type="submit" form="checkoutForm" class="rounded-2xl bg-[#292522] px-4 py-4 text-sm font-bold text-white transition hover:bg-[#302F2A]">Bayar</button>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <div id="cameraModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4">
-      <div class="w-full max-w-xl rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-5 shadow-2xl sm:p-6">
+    <div id="productModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 p-4">
+      <div class="w-full max-w-md rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-5 shadow-2xl sm:p-6">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">
-              Camera Scanner
-            </p>
-            <h3 class="mt-1 text-xl font-bold text-[#292522]">
-              Scan Barcode dengan Kamera
-            </h3>
+            <p id="pmTitle" class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">Produk</p>
+            <h3 id="pmHeader" class="mt-1 text-xl font-bold text-[#292522]">Tambah Produk</h3>
+          </div>
+          <button id="closeProductModal" type="button" class="rounded-xl bg-[#F4EFE6] px-3 py-2 text-xs font-bold text-[#8A5B1E] transition hover:bg-[#E8DFD0]">Batal</button>
+        </div>
+
+        <form id="productModalForm" method="POST" class="mt-5 space-y-4">
+          @csrf
+          <div id="pmProductNameWrap">
+            <p class="text-sm font-semibold text-[#292522]">Nama Produk</p>
+            <p id="pmProductName" class="mt-1 text-base font-bold text-[#292522]"></p>
+            <input type="hidden" name="product_id" id="pmProductId">
+            <input type="hidden" name="sale_type" id="pmSaleType">
+            <input type="hidden" name="price" id="pmPriceHidden">
           </div>
 
-          <button
-            id="closeCameraModal"
-            type="button"
-            class="rounded-xl bg-[#F4EFE6] px-3 py-2 text-xs font-bold text-[#8A5B1E] transition duration-200 hover:bg-[#E8DFD0]"
-          >
-            Tutup
-          </button>
-        </div>
-
-        <div class="mt-4 rounded-[24px] border border-[#E7E1D9] bg-white p-3">
-          <div
-              id="cameraPreview"
-              style="
-                  width:100%;
-                  min-height:320px;
-                  border-radius:20px;
-                  overflow:hidden;
-              ">
-          </div>
-          <div id="scannerLoader" class="mt-3 hidden rounded-2xl bg-[#F4EFE6] px-3 py-2 text-sm font-semibold text-[#8A5B1E]">
-            Mengakses kamera...
-          </div>
-          <p id="cameraStatus" class="mt-3 text-sm text-[#6B4F3A]">
-            Siapkan kamera untuk memindai barcode secara realtime.
-          </p>
-        </div>
-
-        <div class="mt-4">
-          <label for="cameraSelect" class="mb-2 block text-sm font-semibold text-[#292522]">
-            Pilih Kamera
-          </label>
-          <select
-            id="cameraSelect"
-            class="w-full rounded-2xl border border-[#D8D3C9] bg-white px-4 py-3 text-sm text-[#292522] outline-none transition duration-200 hover:border-[#B8B1A4] focus:border-[#292522] focus:ring-4 focus:ring-[#292522]/10"
-          >
-            <option value="">Memuat kamera...</option>
-          </select>
-        </div>
-
-        <div class="mt-4 flex flex-col gap-3 sm:flex-row">
-          <button
-            id="startCameraScan"
-            type="button"
-            class="inline-flex flex-1 items-center justify-center rounded-2xl bg-[#292522] px-4 py-3 text-sm font-bold text-white transition duration-200 hover:bg-[#3A352F]"
-          >
-            Buka Kamera
-          </button>
-          <button
-            id="stopCameraScan"
-            type="button"
-            class="inline-flex flex-1 items-center justify-center rounded-2xl bg-[#F4EFE6] px-4 py-3 text-sm font-bold text-[#8A5B1E] transition duration-200 hover:bg-[#E8DFD0]"
-          >
-            Tutup Kamera
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid gap-6 grid-cols-1 lg:grid-cols-12">
-
-      <section class="rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-5 shadow-sm sm:p-6 lg:col-span-8">
-        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">
-              Product Catalog
-            </p>
-            <h2 class="mt-1 text-xl font-bold text-[#292522]">
-              Produk
-            </h2>
+            <p class="text-sm font-semibold text-[#292522]">Kategori</p>
+            <p id="pmCategory" class="mt-1 text-base text-[#292522]"></p>
           </div>
 
-          <span class="inline-flex w-fit items-center rounded-2xl bg-[#F4EFE6] px-3 py-2 text-xs font-bold text-[#8A5B1E]">
-            {{ $products->count() }} PRODUK
-          </span>
-        </div>
-
-        <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            @forelse ($products as $product)
-
-                <div class="group flex flex-col rounded-2xl border border-[#E7E1D9] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-
-                    <div class="flex items-start justify-between">
-                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#292522] to-[#6B4F3A] text-white">
-                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                                    d="M4 7h16v10H4zM9 11h6" />
-                            </svg>
-                        </div>
-
-                        <span class="rounded-full bg-[#F4EFE6] px-3 py-1 text-xs font-semibold text-[#8A5B1E]">
-                            {{ $product->stock }} {{ $product->stockUnit() }}
-                        </span>
-                    </div>
-
-                    <div class="mt-4">
-                        <h3 class="line-clamp-2 min-h-[52px] text-lg font-bold text-[#292522]">
-                            {{ $product->name }}
-                        </h3>
-
-                        <p class="mt-1 text-xs text-gray-400">
-                            {{ $product->sku }}
-                        </p>
-                    </div>
-
-                    <div class="mt-3 flex flex-wrap gap-2">
-                        <span class="rounded-full bg-[#F7F5F0] px-3 py-1 text-xs text-[#6B4F3A]">
-                            {{ $product->category?->name ?? 'Kategori' }}
-                        </span>
-
-                        <span class="rounded-full bg-[#F7F5F0] px-3 py-1 text-xs text-[#6B4F3A]">
-                            {{ $product->unit ?? 'Unit' }}
-                        </span>
-                    </div>
-
-                    <hr class="my-4 border-[#ECE5DB]">
-
-                    <div class="mb-5">
-                        <p class="text-[11px] uppercase tracking-widest text-gray-400">
-                            Harga
-                        </p>
-
-                        <p class="mt-2 text-2xl font-bold text-[#8A5B1E]">
-                            Rp {{ number_format($product->sell_price,0,',','.') }}
-                        </p>
-                    </div>
-
-                    <form method="POST" action="{{ route('pos.cart.add',$product->id) }}" class="mt-auto">
-                        @csrf
-
-                        <button
-                            class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#292522] py-3 font-semibold text-white transition hover:bg-[#3A352F]">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M3 3h2l2.4 12.2a2 2 0 002 1.6h7.8a2 2 0 001.9-1.4L21 8H6"/>
-                                <circle cx="9" cy="20" r="1"/>
-                                <circle cx="18" cy="20" r="1"/>
-                            </svg>
-
-                            Tambah
-                        </button>
-                    </form>
-
-                </div>
-
-            @empty
-
-                <div class="col-span-full rounded-3xl border border-[#E7E1D9] bg-white py-14 text-center">
-
-                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F4EFE6] text-[#B47727]">
-                        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="1.8"
-                                  d="M20 13V6a2 2 0 00-2-2h-3.5a2 2 0 01-1.4-.6l-.7-.7a2 2 0 00-1.4-.6H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4"/>
-                        </svg>
-                    </div>
-
-                    <h3 class="mt-5 text-lg font-semibold text-[#292522]">
-                        Belum ada produk
-                    </h3>
-
-                    <p class="mt-2 text-sm text-[#6B4F3A]">
-                        Belum ada produk aktif yang memiliki stok.
-                    </p>
-
-                </div>
-
-            @endforelse
-        </div>
-      </section>
-      <section class="rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-5 shadow-[0_24px_60px_-28px_rgba(41,37,34,0.35)]
-        sm:p-6
-        lg:col-span-4
-        lg:sticky
-        lg:top-24
-        lg:min-h-[720px]
-        lg:max-h-[calc(100vh-7rem)]
-        lg:flex
-        lg:flex-col">
-        <div class="flex h-full min-h-0 flex-col">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">
-                Current Order
-              </p>
-              <h2 class="mt-1 text-xl font-bold text-[#292522]">
-                Keranjang
-              </h2>
-            </div>
-
-            @if(!empty($cart))
-              <form method="POST" action="{{ route('pos.cart.clear') }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="rounded-xl bg-[#F4EFE6] px-3 py-2 text-xs font-bold text-[#8A5B1E] transition duration-200 hover:bg-[#E8DFD0]">
-                  Kosongkan
-                </button>
-              </form>
-            @endif
+          <div>
+            <p id="pmPrimaryPriceLabel" class="text-sm font-semibold text-[#292522]">Harga</p>
+            <p id="pmProductPrice" class="mt-1 text-base font-semibold text-[#8A5B1E]"></p>
           </div>
 
-          <div class="mt-5 flex-1 overflow-y-auto space-y-3 pr-2">
-            @forelse ($cart as $item)
-              @php
-                $isTembakauItem = (bool) ($item['is_tembakau'] ?? false);
-                $itemUnitLabel = $isTembakauItem ? 'gram' : ($item['unit'] ?? 'pcs');
-                $itemStepValue = $isTembakauItem ? 100 : 1;
-                $itemMinValue = $isTembakauItem ? 100 : 1;
-                $itemLineTotal = $isTembakauItem
-                  ? $item['price'] * ($item['qty'] / 100)
-                  : $item['price'] * $item['qty'];
-              @endphp
-
-              <div
-                class="cursor-pointer rounded-[22px] border border-[#E7E1D9] bg-[#FAF9F6] p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#B47727] hover:bg-[#FCF8F2]"
-                role="button"
-                tabindex="0"
-                data-item-edit-trigger
-                data-item-name="{{ e($item['name']) }}"
-                data-item-price="{{ number_format($item['price'], 0, ',', '.') }}"
-                data-item-qty="{{ $item['qty'] }}"
-                data-item-unit="{{ $itemUnitLabel }}"
-                data-item-step="{{ $itemStepValue }}"
-                data-item-min="{{ $itemMinValue }}"
-                data-item-is-tembakau="{{ $isTembakauItem ? '1' : '0' }}"
-                data-item-update-url="{{ route('pos.cart.update', ['product' => $item['product_id']]) }}"
-              >
-                <div class="flex items-start justify-between gap-3">
-                  <div class="min-w-0 flex-1">
-                    <p class="truncate text-sm font-bold text-[#292522]">
-                      {{ $item['name'] }}
-                    </p>
-                  </div>
-
-                  <form
-                    method="POST"
-                    action="{{ route('pos.cart.remove', ['product' => $item['product_id']]) }}"
-                    class="flex-shrink-0"
-                    data-item-delete-form
-                  >
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="text-xs font-bold text-[#8A5B1E] transition duration-200 hover:text-[#B47727]">
-                      Hapus
-                    </button>
-                  </form>
-                </div>
-
-                <div class="mt-4 flex items-end justify-between gap-3">
-                  <div class="min-w-0">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#8A5B1E]">
-                      Qty
-                    </p>
-                    <p class="mt-1 text-lg font-semibold text-[#292522]">
-                      {{ $item['qty'] }} {{ $itemUnitLabel }}
-                    </p>
-                  </div>
-
-                  <div class="text-right">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#8A5B1E]">
-                      Total
-                    </p>
-                    <p class="mt-1 text-lg font-bold text-[#8A5B1E]">
-                      Rp {{ number_format($itemLineTotal, 0, ',', '.') }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            @empty
-              <div class="rounded-2xl bg-[#FAF9F6] p-6 text-center">
-                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4EFE6] text-[#B47727]">
-                  <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 3h2l2.4 12.2a2 2 0 002 1.6h7.8a2 2 0 001.9-1.4L21 8H6" />
-                  </svg>
-                </div>
-
-                <p class="mt-3 text-sm text-[#6B4F3A]">
-                  Keranjang masih kosong.
-                </p>
-              </div>
-            @endforelse
+          <div id="pmWholesalePriceWrap" class="hidden">
+            <p class="text-sm font-semibold text-[#292522]">Harga Grosir per Gram</p>
+            <p id="pmWholesalePrice" class="mt-1 text-base font-semibold text-[#8A5B1E]"></p>
           </div>
 
-          <div class="mt-6 rounded-[22px] border border-[#E7E1D9] bg-white p-4 shadow-sm">
-            <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">
-              Ringkasan
-            </p>
+          <div id="pmWholesaleMinQtyWrap" class="hidden">
+            <p class="text-sm font-semibold text-[#292522]">Minimal Pembelian Grosir (Gram)</p>
+            <p id="pmWholesaleMinQty" class="mt-1 text-base text-[#292522]"></p>
+          </div>
 
-            <div class="mt-4 space-y-3">
-              <div class="flex items-center justify-between rounded-2xl bg-[#FAF9F6] px-4 py-3">
-                <span class="text-sm font-semibold text-[#6B4F3A]">Total Item</span>
-                <span class="text-lg font-bold text-[#8A5B1E]">
+          <div id="pmStockWrap">
+            <p class="text-sm font-semibold text-[#292522]">Stok Awal</p>
+            <p id="pmStock" class="mt-1 text-base text-[#292522]"></p>
+          </div>
 
-                @if($gramTotal > 0)
-                    {{ $gramTotal }} gram
-                @endif
-
-                @if($itemTotal > 0)
-                    @if($gramTotal > 0)
-                        +
-                    @endif
-                    {{ $itemTotal }} item
-                @endif
-
-                </span>
-              </div>
-
-              <div class="flex items-center justify-between rounded-2xl bg-[#FAF9F6] px-4 py-3">
-                <span class="text-sm font-semibold text-[#6B4F3A]">Subtotal</span>
-                <span class="text-lg font-bold text-[#8A5B1E]">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
-              </div>
-
-             <div class="rounded-2xl bg-[#292522] px-4 py-3 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-semibold text-white">
-                        Grand Total
-                    </span>
-
-                    <div class="flex items-center text-2xl font-bold text-[#D89A5B]">
-                        <span class="mr-1 text-lg">Rp</span>
-                        <span>{{ number_format($grandTotal, 0, ',', '.') }}</span>
-                    </div>
-                </div>
+          <div id="pmPurchaseTypeWrap" class="hidden">
+            <p class="text-sm font-semibold text-[#292522]">Jenis Pembelian</p>
+            <div class="mt-2 flex gap-3">
+              <label class="inline-flex items-center gap-2"><input type="radio" name="purchase_type" value="pcs" class="pmPurchaseType"> <span class="text-sm">PCS</span></label>
+              <label class="inline-flex items-center gap-2"><input type="radio" name="purchase_type" value="grosir" class="pmPurchaseType"> <span class="text-sm">Grosir</span></label>
             </div>
           </div>
 
-          <div class="mt-auto border-t border-[#E7E1D9] pt-4">
-              @if ($cartCount > 0)
-                  <div class="flex gap-3">
-
-                      <form action="{{ route('pos.save') }}" method="POST" class="flex-1">
-                          @csrf
-                          <button
-                              type="submit"
-                              class="inline-flex w-full items-center justify-center rounded-2xl border border-[#292522] bg-white px-4 py-3 text-sm font-bold text-[#292522] transition hover:bg-gray-100">
-                              Simpan
-                          </button>
-                      </form>
-
-                      <a href="{{ route('pos.checkout.page') }}"
-                        class="inline-flex flex-1 items-center justify-center rounded-2xl bg-[#292522] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#302F2A] hover:shadow-md">
-                          Bayar
-                      </a>
-
-                  </div>
-              @else
-                  <div class="flex gap-3">
-
-                      <button
-                          disabled
-                          class="inline-flex flex-1 items-center justify-center rounded-2xl border border-gray-300 bg-gray-200 px-4 py-3 text-sm font-bold text-gray-500 cursor-not-allowed">
-                          Simpan
-                      </button>
-
-                      <button
-                          disabled
-                          class="inline-flex flex-1 items-center justify-center rounded-2xl bg-gray-300 px-4 py-3 text-sm font-bold text-white cursor-not-allowed">
-                          Bayar
-                      </button>
-
-                  </div>
-              @endif
-          </div>
-        </div>
-      </section>
-
-      <div id="itemEditModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 p-4">
-        <div class="w-full max-w-md rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-5 shadow-2xl sm:p-6">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">
-                Edit Item
-              </p>
-              <h3 class="mt-1 text-xl font-bold text-[#292522]">
-                Edit Item
-              </h3>
+          <div id="pmInputMethodWrap" class="hidden">
+            <p class="text-sm font-semibold text-[#292522]">Metode Input</p>
+            <div class="mt-2 flex gap-3">
+              <label class="inline-flex items-center gap-2"><input type="radio" name="input_method" value="berat" class="pmInputMethod"> <span class="text-sm">Berat</span></label>
+              <label class="inline-flex items-center gap-2"><input type="radio" name="input_method" value="nominal" class="pmInputMethod"> <span class="text-sm">Nominal</span></label>
             </div>
-
-            <button
-              type="button"
-              id="closeItemEditModal"
-              class="rounded-xl bg-[#F4EFE6] px-3 py-2 text-xs font-bold text-[#8A5B1E] transition duration-200 hover:bg-[#E8DFD0]"
-            >
-              Batal
-            </button>
           </div>
 
-          <form id="itemEditForm" method="POST" class="mt-5 space-y-4">
-            @csrf
-            @method('PATCH')
-
-            <div>
-              <p class="text-sm font-semibold text-[#292522]">
-                Nama Produk
-              </p>
-              <p id="itemEditName" class="mt-1 text-base font-bold text-[#292522]"></p>
+          <div id="pmQtyWrap">
+            <label id="pmQtyLabel" for="pmQty" class="mb-2 block text-sm font-semibold text-[#292522]">Qty</label>
+            <div class="flex items-center gap-3">
+              <button type="button" id="pmMinus" class="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#D8D3C9] bg-white text-xl font-bold text-[#292522] transition hover:bg-[#F4EFE6]">−</button>
+              <input id="pmQty" name="qty" type="number" min="1" step="1" class="w-full rounded-2xl border border-[#D8D3C9] bg-white px-3 py-3 text-sm text-[#292522] outline-none transition duration-200 focus:border-[#292522] focus:ring-4 focus:ring-[#292522]/10">
+              <button type="button" id="pmPlus" class="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#D8D3C9] bg-white text-xl font-bold text-[#292522] transition hover:bg-[#F4EFE6]">+</button>
             </div>
+            <p id="pmUnit" class="mt-2 text-sm text-[#6B4F3A]"></p>
+          </div>
 
-            <div>
-              <p class="text-sm font-semibold text-[#292522]">
-                Harga
-              </p>
-              <p id="itemEditPrice" class="mt-1 text-base font-semibold text-[#8A5B1E]"></p>
+          <div id="pmNominalWrap" class="hidden">
+            <label for="pmNominal" class="mb-2 block text-sm font-semibold text-[#292522]">Nominal</label>
+            <div class="flex items-center gap-3">
+              <input id="pmNominal" type="number" min="1" step="1" class="w-full rounded-2xl border border-[#D8D3C9] bg-white px-3 py-3 text-sm text-[#292522] outline-none transition duration-200 focus:border-[#292522] focus:ring-4 focus:ring-[#292522]/10">
+              <span class="text-sm font-semibold text-[#6B4F3A]">Rp</span>
             </div>
+          </div>
 
-            <div>
-              <label for="itemEditQty" class="mb-2 block text-sm font-semibold text-[#292522]">
-                Qty
-              </label>
-              <div class="flex items-center gap-2">
-                <button
-                  type="button"
-                  id="itemEditMinus"
-                  class="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#D8D3C9] bg-white text-xl font-bold text-[#292522] transition duration-200 hover:bg-[#F4EFE6]"
-                >
-                  −
-                </button>
+          <div id="pmWholesaleMessage" class="hidden text-sm text-[#8A5B1E]"></div>
 
-                <input
-                  id="itemEditQty"
-                  name="qty"
-                  type="number"
-                  min="1"
-                  step="1"
-                  class="w-full rounded-2xl border border-[#D8D3C9] bg-white px-3 py-3 text-sm text-[#292522] outline-none transition duration-200 focus:border-[#292522] focus:ring-4 focus:ring-[#292522]/10"
-                >
+          <div>
+            <p class="text-sm font-semibold text-[#292522]">Subtotal</p>
+            <p id="pmSubtotal" class="mt-1 text-base font-bold text-[#8A5B1E]">Rp 0</p>
+          </div>
 
-                <button
-                  type="button"
-                  id="itemEditPlus"
-                  class="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#D8D3C9] bg-white text-xl font-bold text-[#292522] transition duration-200 hover:bg-[#F4EFE6]"
-                >
-                  +
-                </button>
-              </div>
-              <p id="itemEditUnit" class="mt-2 text-sm text-[#6B4F3A]"></p>
-            </div>
-
-            <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                id="cancelItemEditModal"
-                class="rounded-2xl border border-[#D8D3C9] bg-white px-4 py-3 text-sm font-semibold text-[#6B4F3A] transition duration-200 hover:bg-[#F4EFE6]"
-              >
-                Batal
-              </button>
-              <button
-                type="submit"
-                class="rounded-2xl bg-[#292522] px-4 py-3 text-sm font-bold text-white transition duration-200 hover:bg-[#3A352F]"
-              >
-                Update
-              </button>
-            </div>
-          </form>
-        </div>
+          <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
+            <button id="pmCancel" type="button" class="rounded-2xl border border-[#D8D3C9] bg-white px-4 py-3 text-sm font-semibold text-[#6B4F3A] transition hover:bg-[#F4EFE6]">Batal</button>
+            <button id="pmSubmit" type="submit" class="rounded-2xl bg-[#292522] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#3A352F]">Tambah</button>
+          </div>
+        </form>
       </div>
-
     </div>
 
-
+    <div id="cameraModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4">
+      <div class="w-full max-w-2xl rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-5 shadow-2xl sm:p-6">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-[#B47727]">Camera Scanner</p>
+            <h3 class="mt-1 text-xl font-bold text-[#292522]">Scan Barcode dengan Kamera</h3>
+          </div>
+          <button id="closeCameraModal" type="button" class="rounded-xl bg-[#F4EFE6] px-3 py-2 text-xs font-bold text-[#8A5B1E] transition hover:bg-[#E8DFD0]">Tutup</button>
+        </div>
+        <div class="mt-4 rounded-[24px] border border-[#E7E1D9] bg-white p-3">
+          <div id="cameraPreview" style="width:100%; min-height:340px; border-radius:20px; overflow:hidden;"></div>
+          <div id="scannerLoader" class="mt-3 hidden rounded-2xl bg-[#F4EFE6] px-3 py-2 text-sm font-semibold text-[#8A5B1E]">Mengakses kamera...</div>
+          <p id="cameraStatus" class="mt-3 text-sm text-[#6B4F3A]">Siapkan kamera untuk memindai barcode secara realtime.</p>
+        </div>
+        <div class="mt-4">
+          <label for="cameraSelect" class="mb-2 block text-sm font-semibold text-[#292522]">Pilih Kamera</label>
+          <select id="cameraSelect" class="w-full rounded-2xl border border-[#D8D3C9] bg-white px-4 py-3 text-sm text-[#292522] outline-none transition duration-200 hover:border-[#B8B1A4] focus:border-[#292522] focus:ring-4 focus:ring-[#292522]/10"><option value="">Memuat kamera...</option></select>
+        </div>
+        <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+          <button id="startCameraScan" type="button" class="inline-flex flex-1 items-center justify-center rounded-2xl bg-[#292522] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#3A352F]">Buka Kamera</button>
+          <button id="stopCameraScan" type="button" class="inline-flex flex-1 items-center justify-center rounded-2xl bg-[#F4EFE6] px-4 py-3 text-sm font-bold text-[#8A5B1E] transition hover:bg-[#E8DFD0]">Tutup Kamera</button>
+        </div>
+      </div>
+    </div>
   </div>
-
-{{-- BARCODE SCRIPT - PRODUCTION READY v2.0 --}}
 
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script>
-    /**
-     * ============================================================
-     * BARCODE SCANNER MODULE - PRODUCTION READY v2.0
-     * ============================================================
-     * 
-     * Comprehensive Features:
-     * ✓ Single Html5Qrcode instance guarantee
-     * ✓ Android/iOS multi-browser support (Chrome, Safari, Samsung Internet, etc)
-     * ✓ Comprehensive error handling for all exception types
-     * ✓ Camera fallback strategy: cameraId → facingMode → first camera
-     * ✓ Memory leak prevention & event listener audit
-     * ✓ Race condition prevention with proper cleanup sequence
-     * ✓ Full debug logging for production monitoring
-     * ✓ Responsive qrbox for all device sizes
-     * ✓ Proper async cleanup: pause → stop → clear
-     * ✓ HTTPS/localhost detection
-     * ✓ Retry mechanism with exponential backoff
-     * 
-     * Tested: Chrome Android, Safari iPhone, Edge, Firefox,
-     *         Samsung Internet, Redmi, Xiaomi, Oppo, Vivo
-     */
-
-    // ============================================================
-    // 1. INITIALIZATION GUARD
-    // ============================================================
-
     if (window.BarcodeScannerInitialized) {
-      console.warn('[BARCODE] Scanner already initialized, skipping duplicate');
-      throw new Error('Barcode scanner already initialized');
+      console.warn('[POS] Scanner script already loaded');
     }
     window.BarcodeScannerInitialized = true;
 
-    // ============================================================
-    // 2. DOM ELEMENTS
-    // ============================================================
-
-    const DOM = {
+    const dom = {
       barcodeInput: document.getElementById('barcode_input'),
       barcodeMessage: document.getElementById('barcode_message'),
-      openCameraButton: document.getElementById('openCamera'),
       openCameraScan: document.getElementById('openCameraScan'),
-      startCameraScan: document.getElementById('startCameraScan'),
-      stopCameraScan: document.getElementById('stopCameraScan'),
-      closeCameraModalButton: document.getElementById('closeCameraModal'),
       cameraModal: document.getElementById('cameraModal'),
       cameraPreview: document.getElementById('cameraPreview'),
       cameraStatus: document.getElementById('cameraStatus'),
       scannerLoader: document.getElementById('scannerLoader'),
       cameraSelect: document.getElementById('cameraSelect'),
+      closeCameraModal: document.getElementById('closeCameraModal'),
+      startCameraScan: document.getElementById('startCameraScan'),
+      stopCameraScan: document.getElementById('stopCameraScan'),
+      checkoutModal: document.getElementById('checkoutModal'),
+      openCheckoutButton: document.getElementById('openCheckoutButton'),
+      closeCheckoutModal: document.getElementById('closeCheckoutModal'),
+      productModal: document.getElementById('productModal'),
+      productModalForm: document.getElementById('productModalForm'),
+      pmTitle: document.getElementById('pmTitle'),
+      pmHeader: document.getElementById('pmHeader'),
+      closeProductModal: document.getElementById('closeProductModal'),
+      pmProductName: document.getElementById('pmProductName'),
+      pmProductPrice: document.getElementById('pmProductPrice'),
+      pmCategory: document.getElementById('pmCategory'),
+      pmProductId: document.getElementById('pmProductId'),
+      pmSaleType: document.getElementById('pmSaleType'),
+      pmPriceHidden: document.getElementById('pmPriceHidden'),
+      pmPrimaryPriceLabel: document.getElementById('pmPrimaryPriceLabel'),
+      pmWholesalePriceWrap: document.getElementById('pmWholesalePriceWrap'),
+      pmWholesalePrice: document.getElementById('pmWholesalePrice'),
+      pmWholesaleMinQtyWrap: document.getElementById('pmWholesaleMinQtyWrap'),
+      pmWholesaleMinQty: document.getElementById('pmWholesaleMinQty'),
+      pmStock: document.getElementById('pmStock'),
+      pmSaleTypeRadios: document.querySelectorAll('input[name="pmSaleTypeDisplay"]'),
+      pmPurchaseTypeWrap: document.getElementById('pmPurchaseTypeWrap'),
+      pmInputMethodWrap: document.getElementById('pmInputMethodWrap'),
+      pmQtyWrap: document.getElementById('pmQtyWrap'),
+      pmQtyLabel: document.getElementById('pmQtyLabel'),
+      pmQty: document.getElementById('pmQty'),
+      pmMinus: document.getElementById('pmMinus'),
+      pmPlus: document.getElementById('pmPlus'),
+      pmUnit: document.getElementById('pmUnit'),
+      pmNominalWrap: document.getElementById('pmNominalWrap'),
+      pmNominal: document.getElementById('pmNominal'),
+      pmWholesaleMessage: document.getElementById('pmWholesaleMessage'),
+      pmSubtotal: document.getElementById('pmSubtotal'),
+      pmCancel: document.getElementById('pmCancel'),
+      pmSubmit: document.getElementById('pmSubmit'),
+      cartItemsContainer: document.getElementById('cartItemsContainer'),
+      summaryItems: document.getElementById('summaryItems'),
+      summaryGram: document.getElementById('summaryGram'),
+      summarySubtotal: document.getElementById('summarySubtotal'),
+      summaryGrandTotal: document.getElementById('summaryGrandTotal'),
+      checkoutSubtotalText: document.getElementById('checkoutSubtotalText'),
+      checkoutTaxText: document.getElementById('checkoutTaxText'),
+      checkoutDiscountText: document.getElementById('checkoutDiscountText'),
+      checkoutGrandTotalText: document.getElementById('checkoutGrandTotalText'),
+      qrisTotalText: document.getElementById('qrisTotalText'),
+      paymentMethodHidden: document.getElementById('payment_method'),
+      paymentMethodCards: document.querySelectorAll('.payment-method-card'),
+      paymentMethodRadios: document.querySelectorAll('.payment-method-radio'),
+      paidAmount: document.getElementById('paid_amount'),
+      changeAmount: document.getElementById('changeAmount'),
+      exactAmountBtn: document.getElementById('exactAmountBtn'),
+      roundAmountBtn: document.getElementById('roundAmountBtn'),
+      quickAmountsContainer: document.getElementById('quickAmountsContainer'),
+      checkoutSubmitBtn: document.getElementById('checkoutSubmitBtn'),
+      closeCheckoutModalBottom: document.getElementById('closeCheckoutModalBottom'),
+      cashFields: document.getElementById('cashFields'),
+      qrisCard: document.getElementById('qrisCard'),
+      csrfToken: document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
     };
 
-    // ============================================================
-    // 3. SCANNER STATE
-    // ============================================================
+    let barcodeEnterLocked = false;
+    function handleBarcodeEnter(event) {
+      if (event.key === 'Enter' || event.keyCode === 13 || event.code === 'Enter') {
+        event.preventDefault();
+        if (barcodeEnterLocked) return;
+        barcodeEnterLocked = true;
+        processBarcode(dom.barcodeInput.value.trim());
+        setTimeout(() => { barcodeEnterLocked = false; }, 150);
+      }
+    }
 
-    const SCANNER_STATE = {
+    const state = {
       html5QrCode: null,
-      isScannerRunning: false,
-      isProcessingScan: false,
-      scannerAbortController: null,
-      availableCameras: [],
-      cameraStartAttempts: 0,
-      eventListenersRegistered: false,
+      activeBarcode: null,
+      currentTembakauProduct: null,
+      isScanning: false,
     };
-
-    // ============================================================
-    // 4. LOGGING & DEBUG UTILITIES
-    // ============================================================
-
-    function extractErrorMessage(error) {
-      if (!error) return 'Unknown error occurred';
-      
-      if (typeof error === 'string') return error;
-      
-      if (error instanceof Error || (typeof error === 'object' && error.message)) {
-        const errorMap = {
-          'NotAllowedError': 'Camera permission denied or user canceled',
-          'NotFoundError': 'No camera device found on this device',
-          'NotReadableError': 'Camera is already in use by another application',
-          'OverconstrainedError': 'Camera does not meet your requirements',
-          'SecurityError': 'HTTPS or localhost required for camera access',
-          'NotSupportedError': 'Browser does not support camera access',
-          'AbortError': 'Camera access was aborted',
-          'TimeoutError': 'Camera access request timed out',
-        };
-
-        if (errorMap[error.name]) return errorMap[error.name];
-        return error.message || error.name || 'Error';
-      }
-      
-      if (typeof error === 'object') {
-        return error.description || error.msg || JSON.stringify(error);
-      }
-      
-      return String(error);
-    }
-
-    function logError(label, error, context = {}) {
-      console.error(`[BARCODE:${label}]`, error);
-      console.dir(error);
-      console.table({
-        label, 
-        name: error?.name || 'Unknown',
-        message: extractErrorMessage(error),
-        code: error?.code,
-        type: typeof error,
-        ...context
-      });
-    }
-
-    function logDebug(label, data = {}) {
-      console.log(`[BARCODE:${label}]`, data);
-    }
-
-    // ============================================================
-    // 5. UTILITY FUNCTIONS
-    // ============================================================
-
-    function getProtocolInfo() {
-      const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-      const isSecure = location.protocol === 'https:' || isDev;
-      return { isDev, isSecure };
-    }
-
-    function getResponsiveQrbox() {
-      const vw = Math.min(window.innerWidth, window.innerHeight);
-      const containerPadding = 40;
-      const maxSize = Math.min(vw - containerPadding, 600);
-      return {
-        width: Math.max(maxSize * 0.85, 180),
-        height: Math.max(maxSize * 0.4, 100),
-      };
-    }
-
-    function triggerVibration() {
-      try {
-        if ('vibrate' in navigator) navigator.vibrate(200);
-      } catch (e) {
-        logDebug('vibration_not_supported');
-      }
-    }
 
     function showMessage(message, type = 'info') {
-      if (!DOM.barcodeMessage) return;
-
-      DOM.barcodeMessage.textContent = message;
-      DOM.barcodeMessage.className = 'mt-3 rounded-2xl p-3 text-sm';
-      DOM.barcodeMessage.classList.remove('hidden');
-      DOM.barcodeMessage.classList.remove(
-        'bg-[#F4EFE6]', 'bg-red-50', 'bg-green-50',
-        'text-[#8A5B1E]', 'text-red-700', 'text-green-700'
-      );
-
+      if (!dom.barcodeMessage) return;
+      dom.barcodeMessage.textContent = message;
+      dom.barcodeMessage.className = 'mt-3 rounded-2xl p-3 text-sm';
       if (type === 'error') {
-        DOM.barcodeMessage.classList.add('bg-red-50', 'text-red-700');
+        dom.barcodeMessage.classList.add('bg-red-50', 'text-red-700');
       } else if (type === 'success') {
-        DOM.barcodeMessage.classList.add('bg-green-50', 'text-green-700');
+        dom.barcodeMessage.classList.add('bg-green-50', 'text-green-700');
       } else {
-        DOM.barcodeMessage.classList.add('bg-[#F4EFE6]', 'text-[#8A5B1E]');
+        dom.barcodeMessage.classList.add('bg-[#F4EFE6]', 'text-[#8A5B1E]');
       }
-
-      logDebug('message_shown', { message, type });
     }
 
-    function resetScannerUi() {
-      DOM.scannerLoader?.classList.add('hidden');
-      if (DOM.cameraStatus) DOM.cameraStatus.textContent = 'Siapkan kamera untuk memindai barcode secara realtime.';
-      logDebug('scanner_ui_reset');
+    function focusBarcode() {
+      if (!dom.barcodeInput) return;
+      dom.barcodeInput.value = '';
+      dom.barcodeInput.focus();
+      dom.barcodeInput.select();
     }
 
-    function setButtonsDisabled(disabled) {
-      const buttons = [DOM.startCameraScan, DOM.stopCameraScan, DOM.openCameraButton, DOM.openCameraScan];
-      buttons.forEach(btn => {
-        if (btn) {
-          btn.disabled = disabled;
-          btn.style.opacity = disabled ? '0.5' : '1';
-          btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
+    function formatRp(value) {
+      return `Rp ${Number(value || 0).toLocaleString('id-ID')}`;
+    }
+
+    function parseRp(value) {
+      if (value == null) return 0;
+      return Number(String(value).replace(/[\D]/g, '')) || 0;
+    }
+
+    function getGrandTotalValue() {
+      return parseRp(dom.checkoutGrandTotalText?.textContent || dom.qrisTotalText?.textContent || 0);
+    }
+
+    function isQrisSelected() {
+      return dom.paymentMethodHidden?.value === 'qris';
+    }
+
+    function setSelectedPaymentMethod(type) {
+      if (!dom.paymentMethodHidden) return;
+      dom.paymentMethodHidden.value = type;
+      dom.paymentMethodCards?.forEach((card) => {
+        const isActive = card.dataset.paymentType === type;
+        card.classList.toggle('active', isActive);
+        card.classList.toggle('border-[#B47727]', isActive);
+        card.classList.toggle('bg-[#F4EFE6]', isActive);
+        const check = card.querySelector('.payment-method-check');
+        if (check) {
+          check.classList.toggle('hidden', !isActive);
+        }
+        const radio = card.querySelector('.payment-method-radio');
+        if (radio) {
+          radio.checked = isActive;
         }
       });
-      logDebug('buttons_state_changed', { disabled });
+
+      if (dom.cashFields) {
+        dom.cashFields.classList.toggle('hidden', type !== 'cash');
+      }
+      if (dom.qrisCard) {
+        dom.qrisCard.classList.toggle('hidden', type !== 'qris');
+      }
+      if (dom.paidAmount) {
+        dom.paidAmount.readOnly = type !== 'cash';
+        if (type !== 'cash') {
+          dom.paidAmount.value = getGrandTotalValue();
+        }
+      }
+      updatePaymentCalculation();
     }
 
-    // ============================================================
-    // 6. CAMERA MANAGEMENT
-    // ============================================================
+    function updatePaymentCalculation() {
+      const grandTotal = getGrandTotalValue();
+      const paidValue = Number(dom.paidAmount?.value || 0);
+      const paymentType = dom.paymentMethodHidden?.value || 'cash';
+      const change = paidValue - grandTotal;
+      const changeText = formatRp(Math.max(change, 0));
 
-    async function loadAvailableCameras() {
-      if (!window.Html5Qrcode) {
-        logError('loadAvailableCameras', new Error('Html5Qrcode library not available'));
-        if (DOM.cameraStatus) DOM.cameraStatus.textContent = 'Library scanner tidak tersedia.';
-        return false;
+      if (dom.changeAmount) {
+        dom.changeAmount.textContent = paymentType === 'cash' ? changeText : formatRp(0);
+        dom.changeAmount.className = 'text-lg font-bold ' + (paymentType === 'cash' ? (change < 0 ? 'text-red-600' : 'text-[#8A5B1E]') : 'text-[#8A5B1E]');
       }
 
-      try {
-        logDebug('loading_cameras');
-        if (DOM.cameraStatus) DOM.cameraStatus.textContent = 'Memuat daftar kamera...';
-
-        const cameras = await window.Html5Qrcode.getCameras();
-        logDebug('cameras_loaded', { count: cameras?.length });
-
-        SCANNER_STATE.availableCameras = cameras || [];
-
-        if (DOM.cameraSelect) DOM.cameraSelect.innerHTML = '';
-
-        if (!cameras || cameras.length === 0) {
-          const option = document.createElement('option');
-          option.value = '';
-          option.textContent = 'Tidak ada kamera terdeteksi';
-          if (DOM.cameraSelect) DOM.cameraSelect.appendChild(option);
-          if (DOM.cameraStatus) DOM.cameraStatus.textContent = 'Tidak ada kamera yang tersedia di perangkat ini.';
-          return false;
-        }
-
-        let preferredIndex = 0;
-        cameras.forEach((camera, index) => {
-          const option = document.createElement('option');
-          option.value = camera.id;
-          const label = camera.label || `Kamera ${index + 1}`;
-          option.textContent = label;
-          if (DOM.cameraSelect) DOM.cameraSelect.appendChild(option);
-
-          const labelLower = label.toLowerCase();
-          if (labelLower.includes('back') || labelLower.includes('rear') || labelLower.includes('environment')) {
-            preferredIndex = index;
-          }
-        });
-
-        if (cameras[preferredIndex] && DOM.cameraSelect) {
-          DOM.cameraSelect.value = cameras[preferredIndex].id;
-          logDebug('preferred_camera_selected', { index: preferredIndex, id: cameras[preferredIndex].id });
-        }
-
-        if (DOM.cameraStatus) DOM.cameraStatus.textContent = 'Kamera siap. Tekan buka kamera untuk memulai.';
-        return true;
-
-      } catch (error) {
-        logError('loadAvailableCameras', error);
-        if (DOM.cameraStatus) DOM.cameraStatus.textContent = 'Tidak dapat memuat daftar kamera: ' + extractErrorMessage(error);
-        return false;
+      const canPay = paymentType === 'cash' ? paidValue >= grandTotal && grandTotal > 0 : grandTotal > 0;
+      if (dom.checkoutSubmitBtn) {
+        dom.checkoutSubmitBtn.disabled = !canPay;
+        dom.checkoutSubmitBtn.classList.toggle('opacity-50', !canPay);
+        dom.checkoutSubmitBtn.classList.toggle('cursor-not-allowed', !canPay);
       }
     }
 
-    async function stopCameraScanner() {
-      if (!SCANNER_STATE.html5QrCode) {
-        logDebug('stop_scanner_no_instance');
-        return;
-      }
-
-      logDebug('stopping_scanner');
-
-      try {
-        try {
-          if (SCANNER_STATE.html5QrCode.isScanning) {
-            logDebug('pausing_scanner');
-            await SCANNER_STATE.html5QrCode.pause();
-          }
-        } catch (e) {
-          logDebug('pause_error', { msg: extractErrorMessage(e) });
-        }
-
-        try {
-          logDebug('stopping_scanner_instance');
-          await SCANNER_STATE.html5QrCode.stop();
-        } catch (e) {
-          logDebug('stop_error', { msg: extractErrorMessage(e) });
-        }
-
-        try {
-          logDebug('clearing_scanner');
-          await SCANNER_STATE.html5QrCode.clear();
-        } catch (e) {
-          logDebug('clear_error', { msg: extractErrorMessage(e) });
-        }
-
-      } catch (error) {
-        logError('stopCameraScanner_cleanup', error);
-      }
-
-      SCANNER_STATE.html5QrCode = null;
-      SCANNER_STATE.isScannerRunning = false;
-      SCANNER_STATE.isProcessingScan = false;
-      SCANNER_STATE.cameraStartAttempts = 0;
-
-      if (DOM.cameraPreview) DOM.cameraPreview.innerHTML = '';
-
-      setButtonsDisabled(false);
-      resetScannerUi();
-      logDebug('scanner_stopped_fully');
+    function createQuickAmountButton(amount) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'rounded-2xl border border-[#D8D3C9] bg-white px-4 py-3 text-sm font-semibold text-[#292522] transition hover:bg-[#F4EFE6]';
+      button.textContent = formatRp(amount);
+      button.addEventListener('click', () => {
+        if (!dom.paidAmount) return;
+        dom.paidAmount.value = amount;
+        updatePaymentCalculation();
+      });
+      return button;
     }
 
-    async function startCameraScanner() {
-      if (SCANNER_STATE.isScannerRunning && SCANNER_STATE.html5QrCode) {
-        logDebug('scanner_already_running');
-        return;
-      }
-
-      if (SCANNER_STATE.html5QrCode) {
-        logDebug('cleaning_existing_scanner_instance');
-        await stopCameraScanner();
-      }
-
-      if (!window.Html5Qrcode) {
-        logError('startCameraScanner', new Error('Html5Qrcode library not loaded'));
-        showMessage('⚠ Library scanner gagal dimuat. Refresh halaman.', 'error');
-        if (DOM.cameraStatus) DOM.cameraStatus.textContent = 'Library scanner tidak tersedia.';
-        setButtonsDisabled(false);
-        return;
-      }
-
-      const { isDev, isSecure } = getProtocolInfo();
-      if (!isSecure) {
-        const msg = 'HTTPS atau localhost diperlukan untuk akses kamera.';
-        showMessage(msg, 'error');
-        if (DOM.cameraStatus) DOM.cameraStatus.textContent = msg;
-        logError('startCameraScanner', new Error('Not HTTPS or localhost'));
-        setButtonsDisabled(false);
-        return;
-      }
-
-      setButtonsDisabled(true);
-      DOM.scannerLoader?.classList.remove('hidden');
-      if (DOM.cameraStatus) DOM.cameraStatus.textContent = 'Mengakses kamera...';
-
-      try {
-        logDebug('creating_html5qrcode_instance', { attemptNo: SCANNER_STATE.cameraStartAttempts + 1 });
-
-        SCANNER_STATE.html5QrCode = new window.Html5Qrcode('cameraPreview');
-
-        let cameraConfig;
-        const selectedCameraId = DOM.cameraSelect?.value;
-
-        if (selectedCameraId && SCANNER_STATE.cameraStartAttempts === 0) {
-          logDebug('attempt_1_camera_id', { cameraId: selectedCameraId });
-          cameraConfig = { deviceId: { exact: selectedCameraId } };
-        } else {
-          logDebug('attempt_2_facingMode_fallback');
-          cameraConfig = { facingMode: { ideal: 'environment' } };
+    function generateQuickAmounts() {
+      if (!dom.quickAmountsContainer || !dom.paidAmount) return;
+      const total = getGrandTotalValue();
+      const roundTo = 10000;
+      const roundedUp = Math.ceil(total / roundTo) * roundTo;
+      const defaultAmounts = [total, roundedUp, roundedUp + roundTo, roundedUp + roundTo * 2];
+      dom.quickAmountsContainer.innerHTML = '';
+      defaultAmounts.forEach((amount) => {
+        if (amount > 0) {
+          dom.quickAmountsContainer.appendChild(createQuickAmountButton(amount));
         }
+      });
+    }
 
-        const scanConfig = {
-          fps: 10,
-          qrbox: getResponsiveQrbox(),
-          aspectRatio: 1.0,
-          disableFlip: false,
-        };
+    function selectPaymentMethod(type) {
+      setSelectedPaymentMethod(type);
+    }
 
-        logDebug('starting_scanner_with_config', { cameraConfig, scanConfig });
+    function updateSummaryUI(summary) {
+      if (dom.summaryItems) dom.summaryItems.textContent = summary.items ?? summary.item_count ?? 0;
+      if (dom.summaryGram) dom.summaryGram.textContent = `${summary.gram ?? summary.total_gram ?? 0} gram`;
+      if (dom.summarySubtotal) dom.summarySubtotal.textContent = `Rp ${Number(summary.subtotal ?? summary.subTotal ?? 0).toLocaleString('id-ID')}`;
+      if (dom.summaryGrandTotal) dom.summaryGrandTotal.textContent = Number(summary.grandTotal ?? summary.grand_total ?? 0).toLocaleString('id-ID');
+      if (dom.topSummaryItems) dom.topSummaryItems.textContent = summary.items ?? summary.item_count ?? 0;
+      if (dom.topSummarySubtotal) dom.topSummarySubtotal.textContent = `Rp ${Number(summary.subtotal ?? summary.subTotal ?? 0).toLocaleString('id-ID')}`;
+    }
 
-        await SCANNER_STATE.html5QrCode.start(
-          cameraConfig,
-          scanConfig,
-          async (decodedText) => {
-            if (SCANNER_STATE.isProcessingScan) {
-              logDebug('duplicate_scan_prevented', { decodedText });
-              return;
-            }
+    function bindCartItemEvents() {
+      if (!dom.cartItemsContainer || dom.cartEventsBound) return;
 
-            SCANNER_STATE.isProcessingScan = true;
-            const cleanedCode = (decodedText || '').trim();
-
-            if (!cleanedCode) {
-              SCANNER_STATE.isProcessingScan = false;
-              return;
-            }
-
-            logDebug('barcode_decoded', { barcode: cleanedCode });
-
-            triggerVibration();
-            DOM.barcodeInput.value = cleanedCode;
-            showMessage('✓ Barcode berhasil dibaca!', 'success');
-
-            await stopCameraScanner();
-            closeCameraModal();
-
-            processBarcode(cleanedCode);
-          }
-        );
-
-        SCANNER_STATE.isScannerRunning = true;
-        SCANNER_STATE.cameraStartAttempts = 0;
-        if (DOM.cameraStatus) DOM.cameraStatus.textContent = 'Scanner aktif. Arahkan kamera ke barcode.';
-
-        logDebug('scanner_started_successfully', { cameraConfig });
-
-      } catch (error) {
-        logError('startCameraScanner', error, { attempt: SCANNER_STATE.cameraStartAttempts });
-
-        if (SCANNER_STATE.cameraStartAttempts < 1 && DOM.cameraSelect?.value) {
-          logDebug('retrying_with_fallback');
-
-          SCANNER_STATE.cameraStartAttempts++;
-          DOM.cameraSelect.value = '';
-          setButtonsDisabled(false);
-          DOM.scannerLoader?.classList.add('hidden');
-          if (DOM.cameraStatus) DOM.cameraStatus.textContent = 'Mencoba ulang dengan mode alternatif...';
-
-          await new Promise(resolve => setTimeout(resolve, 500));
-          await startCameraScanner();
+      dom._cartClickHandler = (event) => {
+        const deleteButton = event.target.closest('[data-item-delete-form] button');
+        if (deleteButton) {
+          event.stopPropagation();
           return;
         }
 
-        await stopCameraScanner();
+        const card = event.target.closest('[data-item-edit-trigger]');
+        if (!card) return;
+        openEditFromCard(card);
+      };
 
-        const userMsg = 'Gagal mengakses kamera: ' + extractErrorMessage(error);
-        showMessage(userMsg, 'error');
-        if (DOM.cameraStatus) DOM.cameraStatus.textContent = userMsg;
-        setButtonsDisabled(false);
+      dom._cartKeydownHandler = (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const card = event.target.closest('[data-item-edit-trigger]');
+        if (!card) return;
+        event.preventDefault();
+        openEditFromCard(card);
+      };
+
+      dom.cartItemsContainer.addEventListener('click', dom._cartClickHandler);
+      dom.cartItemsContainer.addEventListener('keydown', dom._cartKeydownHandler);
+      dom.cartEventsBound = true;
+    }
+
+    function updateCartUI(html, summary) {
+      if (dom.cartItemsContainer) {
+        dom.cartItemsContainer.innerHTML = html;
       }
+      updateSummaryUI(summary);
+      dom.cartEventsBound = false;
+      bindCartItemEvents();
+    }
+
+    function openModal(modal) {
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeModal(modal) {
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function buildForm(action, fields = {}) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = action;
+      form.style.display = 'none';
+      const token = document.createElement('input');
+      token.type = 'hidden';
+      token.name = '_token';
+      token.value = '{{ csrf_token() }}';
+      form.appendChild(token);
+      Object.entries(fields).forEach(([name, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      });
+      document.body.appendChild(form);
+      return form;
+    }
+
+    async function submitAddToCart(productId, fields = {}, actionUrl = null) {
+      if (!productId) {
+        showMessage('ID produk tidak valid. Tidak dapat menambahkan ke keranjang.', 'error');
+        return null;
+      }
+
+      if (!dom.csrfToken) {
+        showMessage('Token CSRF tidak ditemukan.', 'error');
+        return null;
+      }
+
+      const url = actionUrl || `{{ url('/pos/cart') }}/${productId}`;
+      const formData = new FormData();
+      formData.append('_token', dom.csrfToken);
+      Object.entries(fields).forEach(([name, value]) => {
+        formData.append(name, value);
+      });
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: formData,
+        });
+
+        let result = null;
+        let errorMessage = 'Gagal menambahkan produk ke keranjang.';
+        const contentType = response.headers.get('Content-Type') || '';
+
+        if (contentType.includes('application/json')) {
+          try {
+            result = await response.json();
+          } catch (jsonError) {
+            errorMessage = 'Respon JSON tidak valid.';
+          }
+        } else {
+          const text = await response.text();
+          errorMessage = text || errorMessage;
+        }
+
+        if (!response.ok) {
+          if (result && result.message) {
+            errorMessage = result.message;
+          }
+          showMessage(errorMessage, 'error');
+          focusBarcode();
+          return null;
+        }
+
+        if (!result || !result.success) {
+          errorMessage = result?.message || errorMessage;
+          showMessage(errorMessage, 'error');
+          focusBarcode();
+          return null;
+        }
+
+        if (result.cart_html) {
+          updateCartUI(result.cart_html, result.summary ?? {});
+        }
+
+        showMessage(result.message || 'Produk berhasil ditambahkan ke keranjang.', 'success');
+        return result;
+      } catch (error) {
+        showMessage(error?.message || 'Gagal menambahkan produk ke keranjang.', 'error');
+        focusBarcode();
+        return null;
+      }
+    }
+
+    function resetScanModal() {
+      state.isScanning = false;
+      if (dom.scannerLoader) dom.scannerLoader.classList.add('hidden');
+      if (dom.cameraStatus) dom.cameraStatus.textContent = 'Siapkan kamera untuk memindai barcode secara realtime.';
+    }
+
+    async function stopScanner() {
+      if (!state.html5QrCode) return;
+      try { await state.html5QrCode.stop(); } catch (e) {}
+      try { await state.html5QrCode.clear(); } catch (e) {}
+      state.html5QrCode = null;
+      state.isScanning = false;
+      resetScanModal();
+    }
+
+    async function startScanner() {
+      if (!window.Html5Qrcode) { showMessage('Library scanner tidak tersedia.', 'error'); return; }
+      if (state.html5QrCode) await stopScanner();
+      state.html5QrCode = new window.Html5Qrcode('cameraPreview');
+      const cameraId = dom.cameraSelect?.value || undefined;
+      const constraints = cameraId ? { deviceId: { exact: cameraId } } : { facingMode: { ideal: 'environment' } };
+      try {
+        await state.html5QrCode.start(constraints, { fps: 10, qrbox: { width: 260, height: 170 }, aspectRatio: 1.0 }, async (decodedText) => {
+          if (!decodedText || state.isScanning) return;
+          state.isScanning = true;
+          const barcode = decodedText.trim();
+          if (!barcode) { state.isScanning = false; return; }
+          if (dom.barcodeInput) dom.barcodeInput.value = barcode;
+          showMessage('Barcode terbaca. Memproses...', 'success');
+          await stopScanner();
+          closeModal(dom.cameraModal);
+          processBarcode(barcode);
+        });
+        if (dom.cameraStatus) dom.cameraStatus.textContent = 'Scanner aktif. Arahkan kamera ke barcode.';
+        state.isScanning = true;
+      } catch (error) {
+        stopScanner();
+        showMessage('Gagal mengakses kamera: ' + (error?.message || 'Unknown error'), 'error');
+      }
+    }
+
+    async function loadCameras() {
+      if (!window.Html5Qrcode) throw new Error('Library scanner tidak tersedia');
+      const cameras = await window.Html5Qrcode.getCameras();
+      if (!dom.cameraSelect) return cameras;
+      dom.cameraSelect.innerHTML = '';
+      if (!cameras || cameras.length === 0) {
+        dom.cameraSelect.innerHTML = '<option value="">Tidak ada kamera terdeteksi</option>';
+        throw new Error('Tidak ada kamera terdeteksi');
+      }
+      cameras.forEach((camera, index) => {
+        const option = document.createElement('option');
+        option.value = camera.id;
+        option.textContent = camera.label || `Kamera ${index + 1}`;
+        dom.cameraSelect.appendChild(option);
+      });
+      return cameras;
     }
 
     function openCameraModal() {
-      DOM.cameraModal?.classList.remove('hidden');
-      DOM.cameraModal?.classList.add('flex');
-      DOM.scannerLoader?.classList.remove('hidden');
-      SCANNER_STATE.cameraStartAttempts = 0;
-
-      if (DOM.cameraStatus) DOM.cameraStatus.textContent = 'Memuat kamera...';
-
-      logDebug('camera_modal_opened');
-
-      loadAvailableCameras()
-        .then((success) => {
-          if (success || SCANNER_STATE.availableCameras.length > 0) {
-            return startCameraScanner();
-          } else {
-            showMessage('Tidak dapat mengakses kamera perangkat.', 'error');
-            setButtonsDisabled(false);
-          }
-        })
-        .catch(error => {
-          logError('openCameraModal', error);
-          showMessage('Gagal memproses: ' + extractErrorMessage(error), 'error');
-          setButtonsDisabled(false);
-        });
-    }
-
-    async function closeCameraModal() {
-      DOM.cameraModal?.classList.add('hidden');
-      DOM.cameraModal?.classList.remove('flex');
-      await stopCameraScanner().catch(e => {
-        logError('closeCameraModal_cleanup', e);
+      openModal(dom.cameraModal);
+      if (dom.scannerLoader) dom.scannerLoader.classList.remove('hidden');
+      if (dom.cameraStatus) dom.cameraStatus.textContent = 'Memuat daftar kamera...';
+      loadCameras().then(() => startScanner()).catch((error) => {
+        showMessage(error.message || 'Tidak dapat memuat kamera.', 'error');
+        if (dom.scannerLoader) dom.scannerLoader.classList.add('hidden');
       });
-      logDebug('camera_modal_closed');
     }
 
-    async function processBarcode(barcode, retryCount = 0) {
-      const maxRetries = 2;
-      const cleanedCode = (barcode || DOM.barcodeInput?.value || '').trim();
+    function openProductModal({ product, mode = 'add', cartItem = null }) {
+      if (!dom.productModal || !dom.productModalForm) return;
+      const isEdit = mode === 'edit';
 
-      if (!cleanedCode) {
+      dom.pmProductName.textContent = product.name || '';
+      dom.pmCategory.textContent = product.category_name || '-';
+      dom.pmProductId.value = product.id || '';
+      dom.pmSaleType.value = product.sale_type ?? product.saleType ?? '';
+      dom.pmPriceHidden.value = (cartItem && cartItem.price) ? cartItem.price : (product.price ?? product.sell_price ?? 0);
+      dom.pmProductPrice.textContent = `Rp ${Number(dom.pmPriceHidden.value || 0).toLocaleString('id-ID')}`;
+
+      // setup unit label
+      const unitLabel = product.selling_unit ?? product.sellingUnit ?? 'pcs';
+      dom.pmUnit.textContent = `Satuan: ${unitLabel}`;
+      renderSaleTypeIndicator(dom.pmSaleType.value);
+
+      // purchase type visibility (grosir support)
+      const saleType = product.sale_type ?? product.saleType ?? '';
+      const supportsGrosir = String(saleType).includes('grosir') || Number(product.wholesale_price ?? 0) > 0;
+      dom.pmPurchaseTypeWrap.classList.toggle('hidden', !supportsGrosir);
+
+      // input method visibility for gram types
+      const isGram = String(saleType).includes('gram') || unitLabel === 'gram';
+      dom.pmInputMethodWrap.classList.toggle('hidden', !isGram);
+
+      // reset all radio states first
+      dom.productModalForm.querySelectorAll('input[name="purchase_type"]').forEach((input) => input.checked = false);
+      dom.productModalForm.querySelectorAll('input[name="input_method"]').forEach((input) => input.checked = false);
+
+      // default purchase type
+      const defaultPurchaseType = cartItem?.purchase_type || (supportsGrosir ? 'pcs' : null);
+      if (defaultPurchaseType) {
+        const el = dom.productModalForm.querySelector(`[name="purchase_type"][value="${defaultPurchaseType}"]`);
+        if (el) el.checked = true;
+      }
+
+      if (isEdit && cartItem) {
+        dom.pmQty.value = cartItem.qty ?? 1;
+        if (cartItem?.input_method) {
+          const el2 = dom.productModalForm.querySelector(`[name="input_method"][value="${cartItem.input_method}"]`);
+          if (el2) el2.checked = true;
+        }
+        if (cartItem?.input_method === 'nominal') {
+          dom.pmNominalWrap.classList.remove('hidden');
+          dom.pmNominal.value = cartItem.subtotal ?? '';
+          dom.pmQtyWrap.classList.add('hidden');
+        } else {
+          dom.pmNominalWrap.classList.add('hidden');
+          dom.pmQtyWrap.classList.remove('hidden');
+        }
+        dom.pmSubmit.textContent = 'Update';
+        dom.productModalForm.action = cartItem.updateUrl ?? dom.productModalForm.action;
+        // attach PATCH method
+        let methodInput = dom.productModalForm.querySelector('input[name="_method"]');
+        if (!methodInput) {
+          methodInput = document.createElement('input'); methodInput.type = 'hidden'; methodInput.name = '_method';
+          dom.productModalForm.appendChild(methodInput);
+        }
+        methodInput.value = 'PATCH';
+      } else {
+        dom.pmQty.value = 1;
+        dom.pmNominal.value = '';
+        dom.pmSubmit.textContent = 'Tambah';
+        dom.productModalForm.action = `{{ url('/pos/cart') }}/${product.id}`;
+        const methodInput = dom.productModalForm.querySelector('input[name="_method"]'); if (methodInput) methodInput.remove();
+      }
+
+      dom.pmWholesaleMessage.classList.add('hidden');
+      updateModalPriceFromPurchaseType();
+      computeProductModalSubtotal();
+      openModal(dom.productModal);
+      // focus qty or nominal
+      setTimeout(() => {
+        if (!dom.pmQty) return;
+        dom.pmQty.focus(); dom.pmQty.select();
+      }, 50);
+    }
+
+    function resetProductModal() {
+      if (!dom.productModalForm) return;
+      dom.productModalForm.reset();
+      dom.pmProductId.value = '';
+      dom.pmSaleType.value = '';
+      dom.pmPriceHidden.value = '';
+      dom.pmProductName.textContent = '';
+      dom.pmCategory.textContent = '';
+      dom.pmProductPrice.textContent = '';
+      dom.pmStock.textContent = '';
+      dom.pmUnit.textContent = '';
+      dom.pmWholesaleMessage.classList.add('hidden');
+      dom.pmWholesalePriceWrap.classList.add('hidden');
+      dom.pmWholesaleMinQtyWrap.classList.add('hidden');
+      dom.pmNominalWrap.classList.add('hidden');
+      dom.pmQtyWrap.classList.remove('hidden');
+      dom.pmQty.value = 1;
+      dom.pmNominal.value = '';
+      dom.pmSubtotal.textContent = 'Rp 0';
+      dom.pmSubmit.textContent = 'Tambah';
+      dom.productModalForm.removeAttribute('action');
+      const methodInput = dom.productModalForm.querySelector('input[name="_method"]');
+      if (methodInput) methodInput.remove();
+    }
+
+    function closeProductModal() {
+      closeModal(dom.productModal);
+      resetProductModal();
+      focusBarcode();
+    }
+
+    function renderSaleTypeIndicator(saleType) {
+      dom.pmSaleTypeRadios.forEach((radio) => {
+        radio.checked = radio.value === saleType;
+      });
+    }
+
+    function updateModalPriceFromPurchaseType() {
+      const saleType = dom.pmSaleType.value || '';
+      const purchaseTypeEl = dom.productModalForm.querySelector('input[name="purchase_type"]:checked');
+      const purchaseType = purchaseTypeEl ? purchaseTypeEl.value : null;
+      const productPrice = Number(window.__currentScanProduct?.price || 0);
+      const wholesalePrice = Number(window.__currentScanProduct?.wholesale_price || 0);
+      const wholesalePricePerGram = Number(window.__currentScanProduct?.wholesale_price_per_gram || 0);
+      const unitLabel = String(dom.pmUnit.textContent || 'pcs').replace('Satuan: ', '') || 'pcs';
+      const selectedPrice = purchaseType === 'grosir' && wholesalePrice > 0 ? wholesalePrice : productPrice;
+      const primaryDisplayPrice = String(saleType).includes('gram')
+        ? Number(window.__currentScanProduct?.price_per_gram || 0)
+        : selectedPrice;
+      const formattedPrice = Number(primaryDisplayPrice || 0).toLocaleString('id-ID');
+
+      dom.pmPriceHidden.value = selectedPrice;
+      dom.pmProductPrice.textContent = `Rp ${formattedPrice}`;
+      dom.pmPrimaryPriceLabel.textContent = String(saleType).includes('gram') ? 'Harga per Gram' : `Harga per ${unitLabel}`;
+
+      if (String(saleType).includes('gram') && wholesalePricePerGram > 0) {
+        dom.pmWholesalePriceWrap.classList.remove('hidden');
+        dom.pmWholesalePrice.textContent = `Rp ${Number(wholesalePricePerGram).toLocaleString('id-ID')}`;
+      } else {
+        dom.pmWholesalePriceWrap.classList.add('hidden');
+      }
+
+      if (String(saleType).includes('grosir') && Number(window.__currentScanProduct?.wholesale_min_qty || 0) > 0) {
+        dom.pmWholesaleMinQtyWrap.classList.remove('hidden');
+        dom.pmWholesaleMinQty.textContent = `${Number(window.__currentScanProduct.wholesale_min_qty).toLocaleString('id-ID')} ${String(saleType).includes('gram') ? 'gram' : unitLabel}`;
+      } else {
+        dom.pmWholesaleMinQtyWrap.classList.add('hidden');
+      }
+
+      const stockValue = Number(window.__currentScanProduct?.stock || 0);
+      dom.pmStock.textContent = `${stockValue.toLocaleString('id-ID')} ${String(saleType).includes('gram') ? 'gram' : unitLabel}`;
+    }
+
+    function computeProductModalSubtotal() {
+      const price = Number(dom.pmPriceHidden.value || 0);
+      const saleType = dom.pmSaleType.value || '';
+      const isGram = String(saleType).includes('gram') || dom.pmUnit.textContent.includes('gram');
+      const purchaseTypeEl = dom.productModalForm.querySelector('input[name="purchase_type"]:checked');
+      const purchaseType = purchaseTypeEl ? purchaseTypeEl.value : null;
+      const inputMethodEl = dom.productModalForm.querySelector('input[name="input_method"]:checked');
+      const inputMethod = inputMethodEl ? inputMethodEl.value : 'berat';
+
+      let qty = Number(dom.pmQty.value || 0);
+      let subtotal = 0;
+
+      if (isGram) {
+        if (inputMethod === 'nominal') {
+          const nominal = Number(dom.pmNominal.value || 0);
+          subtotal = nominal;
+          qty = price > 0 ? (nominal / price) * 100 : 0;
+        } else {
+          subtotal = price * (qty / 100);
+        }
+      } else {
+        subtotal = price * qty;
+      }
+
+      dom.pmSubtotal.textContent = `Rp ${Number(subtotal || 0).toLocaleString('id-ID')}`;
+      if (inputMethod === 'nominal' && dom.pmQty) {
+        dom.pmQty.value = Math.round(qty);
+      }
+      return { qty, subtotal };
+    }
+
+    async function processBarcode(barcode) {
+      if (!barcode) {
         showMessage('Barcode kosong.', 'error');
-        SCANNER_STATE.isProcessingScan = false;
-        DOM.barcodeInput?.focus();
+        focusBarcode();
         return;
       }
-
-      DOM.barcodeInput.value = cleanedCode;
-      showMessage('⏳ Mengirim barcode ke sistem...', 'info');
-
-      logDebug('processing_barcode', { barcode: cleanedCode, retryCount, maxRetries });
-
-      if (SCANNER_STATE.scannerAbortController) {
-        SCANNER_STATE.scannerAbortController.abort();
-      }
-
-      SCANNER_STATE.scannerAbortController = new AbortController();
-      const timeoutId = setTimeout(() => {
-        SCANNER_STATE.scannerAbortController.abort();
-      }, 10000);
-
-      const scanUrl = "{{ route('pos.scan-barcode') }}?barcode=" + encodeURIComponent(cleanedCode);
-
+      showMessage('Mengirim barcode ke sistem...', 'info');
       try {
-        logDebug('fetching_barcode_endpoint', { url: scanUrl });
-
-        const response = await fetch(scanUrl, {
+        const response = await fetch(`{{ route('pos.scan-barcode') }}?barcode=${encodeURIComponent(barcode)}`, {
           method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          signal: SCANNER_STATE.scannerAbortController.signal,
+          headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         });
-
-        clearTimeout(timeoutId);
-
-        let payload;
-        try {
-          payload = await response.json();
-        } catch (e) {
-          throw new Error('Invalid JSON response from server');
+        const payload = await response.json();
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.message || 'Produk tidak ditemukan');
         }
+        // store last scanned product metadata for modal logic
+        window.__currentScanProduct = payload.product;
+        const saleType = String(payload.product.sale_type || payload.product.saleType || '');
+        const requiresModal = payload.product.is_tembakau || saleType.includes('gram') || saleType.includes('grosir');
 
-        logDebug('barcode_response', { status: response.status, success: payload?.success });
-
-        if (!response.ok || !payload?.success) {
-          throw new Error(payload?.message || 'Barcode tidak ditemukan');
+        if (requiresModal) {
+          openProductModal({ product: payload.product, mode: 'add' });
+        } else {
+          await submitAddToCart(payload.product.id, { qty: 1 });
         }
-
-        logDebug('barcode_found', { productId: payload.product.id, productName: payload.product.name });
-
-        const addToCartUrl = "{{ url('/pos/cart') }}/" + payload.product.id;
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = addToCartUrl;
-        form.style.display = 'none';
-
-        const tokenInput = document.createElement('input');
-        tokenInput.type = 'hidden';
-        tokenInput.name = '_token';
-        tokenInput.value = '{{ csrf_token() }}';
-        form.appendChild(tokenInput);
-
-        document.body.appendChild(form);
-        showMessage(`✓ ${payload.product.name} ditambahkan ke keranjang.`, 'success');
-
-        SCANNER_STATE.isProcessingScan = false;
-        SCANNER_STATE.scannerAbortController = null;
-
-        logDebug('form_submitting_for_add_to_cart', { productId: payload.product.id });
-        form.submit();
-
       } catch (error) {
-        clearTimeout(timeoutId);
+        showMessage(error.message || 'Gagal memproses barcode.', 'error');
+        focusBarcode();
+      }
+    }
+    function openEditFromCard(card) {
+      const product = {
+        id: card.dataset.itemProductId || card.dataset.productId || null,
+        name: card.dataset.itemName || card.dataset.itemName || '',
+        price: Number(card.dataset.itemPriceRaw || card.dataset.itemPrice || 0),
+        selling_unit: card.dataset.itemUnit || '',
+        sale_type: card.dataset.itemSaleType || '',
+      };
 
-        logError('processBarcode', error, { barcode: cleanedCode, retryCount });
+      // derive price_per_gram from stored price: assume stored price is per ons
+      window.__currentScanProduct = {
+        price: product.price,
+        price_unit: 'ons',
+        price_per_gram: product.price / 100,
+        wholesale_price: Number(card.dataset.itemWholesalePrice || 0),
+        wholesale_min_qty: Number(card.dataset.itemWholesaleMinQty || 0),
+      };
 
-        let errorMsg = 'Gagal mengirim barcode ke backend.';
+      const cartItem = {
+        qty: Number(card.dataset.itemQty || 1),
+        purchase_type: card.dataset.itemPurchaseType || null,
+        input_method: card.dataset.itemInputMethod || null,
+        subtotal: null,
+        updateUrl: card.dataset.itemUpdateUrl || null,
+        price: Number(card.dataset.itemPriceRaw || 0),
+        wholesale_price: Number(card.dataset.itemWholesalePrice || 0),
+        wholesale_min_qty: Number(card.dataset.itemWholesaleMinQty || 0),
+      };
 
-        if (error instanceof Error && error.name === 'AbortError') {
-          errorMsg = 'Koneksi timeout. Coba lagi.';
-          
-          if (retryCount < maxRetries) {
-            logDebug('retrying_barcode_processing', {
-              currentRetry: retryCount + 1,
-              maxRetries,
-              barcode: cleanedCode
-            });
+      openProductModal({ product, mode: 'edit', cartItem });
+    }
 
-            showMessage(`⟳ Retry... (${retryCount + 1}/${maxRetries})`, 'info');
-            
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            await processBarcode(cleanedCode, retryCount + 1);
+    document.addEventListener('DOMContentLoaded', () => {
+      focusBarcode();
+      dom.openCameraScan?.addEventListener('click', openCameraModal);
+      dom.closeCameraModal?.addEventListener('click', () => { closeModal(dom.cameraModal); stopScanner(); focusBarcode(); });
+      dom.startCameraScan?.addEventListener('click', startScanner);
+      dom.stopCameraScan?.addEventListener('click', stopScanner);
+
+      dom.barcodeInput?.addEventListener('keydown', handleBarcodeEnter);
+      bindCartItemEvents();
+
+      // modal controls
+      dom.closeProductModal?.addEventListener('click', closeProductModal);
+      dom.pmCancel?.addEventListener('click', closeProductModal);
+      dom.pmMinus?.addEventListener('click', () => { dom.pmQty.value = Math.max(Number(dom.pmQty.min || 1), Number(dom.pmQty.value || 0) - Number(dom.pmQty.step || 1)); computeProductModalSubtotal(); });
+      dom.pmPlus?.addEventListener('click', () => { dom.pmQty.value = Number(dom.pmQty.value || 0) + Number(dom.pmQty.step || 1); computeProductModalSubtotal(); });
+      dom.pmQty?.addEventListener('input', computeProductModalSubtotal);
+      dom.pmNominal?.addEventListener('input', computeProductModalSubtotal);
+      // change listeners for radios
+      dom.productModalForm?.querySelectorAll('input[name="purchase_type"]').forEach((el) => el.addEventListener('change', (event) => {
+        updateModalPriceFromPurchaseType();
+        computeProductModalSubtotal();
+      }));
+      dom.productModalForm?.querySelectorAll('input[name="input_method"]').forEach((el) => el.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val === 'nominal') {
+          dom.pmNominalWrap.classList.remove('hidden');
+          dom.pmQtyWrap.classList.add('hidden');
+        } else {
+          dom.pmNominalWrap.classList.add('hidden');
+          dom.pmQtyWrap.classList.remove('hidden');
+        }
+        computeProductModalSubtotal();
+      }));
+
+      dom.paymentMethodCards?.forEach((card) => {
+        card.addEventListener('click', () => {
+          selectPaymentMethod(card.dataset.paymentType || 'cash');
+        });
+      });
+      dom.paymentMethodRadios?.forEach((radio) => {
+        radio.addEventListener('change', (event) => {
+          selectPaymentMethod(event.target.dataset.type || 'cash');
+        });
+      });
+      dom.exactAmountBtn?.addEventListener('click', () => {
+        const total = getGrandTotalValue();
+        if (!dom.paidAmount) return;
+        dom.paidAmount.value = total;
+        updatePaymentCalculation();
+      });
+      dom.roundAmountBtn?.addEventListener('click', () => {
+        const total = getGrandTotalValue();
+        const roundTo = 10000;
+        if (!dom.paidAmount) return;
+        dom.paidAmount.value = Math.ceil(total / roundTo) * roundTo;
+        updatePaymentCalculation();
+      });
+      dom.paidAmount?.addEventListener('input', () => {
+        if (dom.paymentMethodHidden?.value !== 'cash') return;
+        updatePaymentCalculation();
+      });
+
+      // form submit will be normal POST/PATCH to server
+      dom.productModalForm?.addEventListener('submit', async (e) => {
+        const methodInput = dom.productModalForm.querySelector('input[name="_method"]');
+        const isPatch = methodInput?.value?.toUpperCase() === 'PATCH';
+        if (isPatch) {
+          return; // preserve default update flow for cart item edits
+        }
+
+        e.preventDefault();
+
+        const productId = dom.pmProductId.value;
+        if (!productId) {
+          showMessage('ID produk tidak valid. Tidak dapat menambahkan ke keranjang.', 'error');
+          return;
+        }
+
+        const saleType = dom.pmSaleType.value || '';
+        const isGram = String(saleType).includes('gram') || dom.pmUnit.textContent.includes('gram');
+        const purchaseTypeEl = dom.productModalForm.querySelector('input[name="purchase_type"]:checked');
+        const purchaseType = purchaseTypeEl ? purchaseTypeEl.value : null;
+        const inputMethodEl = dom.productModalForm.querySelector('input[name="input_method"]:checked');
+        const inputMethod = inputMethodEl ? inputMethodEl.value : 'berat';
+        const qty = Number(dom.pmQty.value || 0);
+        const nominal = Number(dom.pmNominal.value || 0);
+
+        if (isGram) {
+          if (inputMethod === 'nominal') {
+            if (!nominal || nominal <= 0) { showMessage('Nominal harus lebih besar dari 0.', 'error'); return; }
+          } else {
+            if (!qty || qty <= 0) { showMessage('Berat harus lebih besar dari 0.', 'error'); return; }
+          }
+        } else {
+          if (!qty || qty < 1) { showMessage('Qty minimal 1.', 'error'); return; }
+        }
+
+        if (purchaseType === 'grosir') {
+          const min = Number(window.__currentScanProduct?.wholesale_min_qty || 0);
+          const unitLabel = isGram ? 'gram' : 'pcs';
+          const checkQty = isGram && inputMethod === 'nominal'
+            ? computeProductModalSubtotal().qty
+            : Number(dom.pmQty.value || 0);
+          if (min > 0 && checkQty < min) {
+            showMessage(`Minimal pembelian grosir adalah ${min} ${unitLabel}.`, 'error');
             return;
           }
         }
 
-        showMessage(errorMsg, 'error');
-        SCANNER_STATE.isProcessingScan = false;
-        DOM.barcodeInput?.focus();
-      }
-    }
+        const price = dom.pmPriceHidden.value;
+        const fields = {
+          qty: dom.pmQty.value || 1,
+          price,
+        };
 
-    // ============================================================
-    // 7. EVENT LISTENERS
-    // ============================================================
+        if (purchaseType !== null) fields.purchase_type = purchaseType;
+        if (inputMethod !== null) fields.input_method = inputMethod;
+        if (isGram && inputMethod === 'nominal') fields.qty = computeProductModalSubtotal().qty;
 
-    function registerEventListeners() {
-      if (SCANNER_STATE.eventListenersRegistered) {
-        logDebug('event_listeners_already_registered');
-        return;
-      }
-
-      logDebug('registering_event_listeners');
-
-      DOM.barcodeInput?.addEventListener('keydown', function handleBarcodeKeydown(event) {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          SCANNER_STATE.isProcessingScan = false;
-          processBarcode(DOM.barcodeInput.value);
+        const result = await submitAddToCart(productId, fields);
+        if (result) {
+          closeProductModal();
+          if (dom.productModal) {
+            dom.productModal.classList.add('hidden');
+            dom.productModal.classList.remove('flex');
+          }
         }
       });
 
-      function handleEscapeKey(event) {
-        if (event.key === 'Escape' && DOM.cameraModal && !DOM.cameraModal.classList.contains('hidden')) {
-          closeCameraModal();
-        }
-      }
-      document.addEventListener('keydown', handleEscapeKey);
+      dom.productModal?.addEventListener('click', (event) => { if (event.target === dom.productModal) closeProductModal(); });
+      dom.checkoutModal?.addEventListener('click', (event) => { if (event.target === dom.checkoutModal) closeModal(dom.checkoutModal); });
+      dom.openCheckoutButton?.addEventListener('click', (event) => {
+        event.preventDefault();
+        generateQuickAmounts();
+        setSelectedPaymentMethod(dom.paymentMethodHidden?.value || 'cash');
+        openModal(dom.checkoutModal);
+      });
+      dom.closeCheckoutModal?.addEventListener('click', () => closeModal(dom.checkoutModal));
+      dom.closeCheckoutModalBottom?.addEventListener('click', () => closeModal(dom.checkoutModal));
 
-      DOM.cameraModal?.addEventListener('click', function handleModalBackdropClick(event) {
-        if (event.target === DOM.cameraModal) {
-          closeCameraModal();
-        }
-      });
-
-      DOM.openCameraButton?.addEventListener('click', openCameraModal);
-      DOM.openCameraScan?.addEventListener('click', openCameraModal);
-      DOM.startCameraScan?.addEventListener('click', () => {
-        startCameraScanner().catch(e => {
-          logError('startCameraScan_button', e);
-        });
-      });
-      DOM.stopCameraScan?.addEventListener('click', () => {
-        stopCameraScanner().catch(e => {
-          logError('stopCameraScan_button', e);
-        });
-      });
-      DOM.closeCameraModalButton?.addEventListener('click', () => {
-        closeCameraModal().catch(e => {
-          logError('closeCameraModal_button', e);
-        });
-      });
-
-      window.addEventListener('beforeunload', async () => {
-        logDebug('window_beforeunload_cleanup');
-        await stopCameraScanner().catch(() => {});
-        if (SCANNER_STATE.scannerAbortController) {
-          SCANNER_STATE.scannerAbortController.abort();
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          if (dom.cameraModal && !dom.cameraModal.classList.contains('hidden')) { closeModal(dom.cameraModal); stopScanner(); focusBarcode(); }
+          if (dom.productModal && !dom.productModal.classList.contains('hidden')) closeProductModal();
+          if (dom.checkoutModal && !dom.checkoutModal.classList.contains('hidden')) closeModal(dom.checkoutModal);
         }
       });
 
-      document.addEventListener('pagehide', async () => {
-        logDebug('document_pagehide_cleanup');
-        await stopCameraScanner().catch(() => {});
-        if (SCANNER_STATE.scannerAbortController) {
-          SCANNER_STATE.scannerAbortController.abort();
-        }
-      });
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          logDebug('page_hidden_background');
-          stopCameraScanner().catch(() => {});
-        }
-      });
-
-      document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', function () {
-          sessionStorage.setItem('scrollPos', window.scrollY);
-        });
-      });
-
-      const scrollPos = sessionStorage.getItem('scrollPos');
-      if (scrollPos !== null) {
-        window.scrollTo({
-          top: parseInt(scrollPos, 10),
-          behavior: 'instant',
-        });
-        sessionStorage.removeItem('scrollPos');
-      }
-
-      SCANNER_STATE.eventListenersRegistered = true;
-      logDebug('event_listeners_registered_complete');
-    }
-
-    // ============================================================
-    // 8. INITIALIZATION
-    // ============================================================
-
-    function initBarcodeModule() {
-      logDebug('barcode_module_init_start', {
-        timestamp: new Date().toISOString(),
-        protocol: getProtocolInfo()
-      });
-
-      if (SCANNER_STATE.eventListenersRegistered) {
-        logDebug('barcode_module_already_initialized');
-        return;
-      }
-
-      if (!window.Html5Qrcode) {
-        console.error('[BARCODE] Html5Qrcode library failed to load');
-        showMessage('⚠ Library scanner gagal dimuat. Refresh halaman.', 'error');
-        logError('initBarcodeModule', new Error('Html5Qrcode not available'));
-        return;
-      }
-
-      registerEventListeners();
-
-      logDebug('barcode_module_init_complete', {
-        html5QrcodeAvailable: !!window.Html5Qrcode,
-        domElementsLoaded: Object.keys(DOM).length,
-      });
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initBarcodeModule, { once: true });
-    } else {
-      initBarcodeModule();
-    }
-
-  </script>
-
-  <script>
-    const itemEditModal = document.getElementById('itemEditModal');
-    const itemEditForm = document.getElementById('itemEditForm');
-    const itemEditName = document.getElementById('itemEditName');
-    const itemEditPrice = document.getElementById('itemEditPrice');
-    const itemEditQty = document.getElementById('itemEditQty');
-    const itemEditUnit = document.getElementById('itemEditUnit');
-    const itemEditMinus = document.getElementById('itemEditMinus');
-    const itemEditPlus = document.getElementById('itemEditPlus');
-    const closeItemEditModalButton = document.getElementById('closeItemEditModal');
-    const cancelItemEditModalButton = document.getElementById('cancelItemEditModal');
-
-    function openItemEditModal(card) {
-      if (!itemEditModal || !itemEditForm || !itemEditName || !itemEditPrice || !itemEditQty || !itemEditUnit) {
-        return;
-      }
-
-      itemEditName.textContent = card.dataset.itemName || '';
-      itemEditPrice.textContent = `Rp ${card.dataset.itemPrice || '0'}`;
-      itemEditQty.value = card.dataset.itemQty || '1';
-      itemEditQty.min = card.dataset.itemMin || '1';
-      itemEditQty.step = card.dataset.itemStep || '1';
-      itemEditUnit.textContent = card.dataset.itemIsTembakau === '1'
-        ? 'Satuan: gram'
-        : `Satuan: ${card.dataset.itemUnit || 'pcs'}`;
-
-      itemEditForm.action = card.dataset.itemUpdateUrl || '';
-      itemEditModal.classList.remove('hidden');
-      itemEditModal.classList.add('flex');
-      itemEditQty.focus();
-      itemEditQty.select();
-    }
-
-    function closeItemEditModal() {
-      if (!itemEditModal) {
-        return;
-      }
-
-      itemEditModal.classList.add('hidden');
-      itemEditModal.classList.remove('flex');
-    }
-
-    function changeModalQty(delta) {
-      if (!itemEditQty) {
-        return;
-      }
-
-      const minValue = Number(itemEditQty.min || 1);
-      const stepValue = Number(itemEditQty.step || 1);
-      const currentValue = Number(itemEditQty.value || minValue);
-      const nextValue = Math.max(minValue, currentValue + delta * stepValue);
-      itemEditQty.value = nextValue;
-    }
-
-    document.querySelectorAll('[data-item-edit-trigger]').forEach((card) => {
-      card.addEventListener('click', (event) => {
-        if (event.target.closest('[data-item-delete-form]')) {
-          return;
-        }
-
-        openItemEditModal(card);
-      });
-
-      card.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          openItemEditModal(card);
-        }
-      });
-    });
-
-    document.querySelectorAll('[data-item-delete-form] button').forEach((button) => {
-      button.addEventListener('click', (event) => {
-        event.stopPropagation();
-      });
-    });
-
-    itemEditMinus?.addEventListener('click', () => changeModalQty(-1));
-    itemEditPlus?.addEventListener('click', () => changeModalQty(1));
-    closeItemEditModalButton?.addEventListener('click', closeItemEditModal);
-    cancelItemEditModalButton?.addEventListener('click', closeItemEditModal);
-
-    itemEditModal?.addEventListener('click', (event) => {
-      if (event.target === itemEditModal) {
-        closeItemEditModal();
-      }
-    });
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && itemEditModal && !itemEditModal.classList.contains('hidden')) {
-        closeItemEditModal();
-      }
+      window.addEventListener('beforeunload', stopScanner);
     });
   </script>
 

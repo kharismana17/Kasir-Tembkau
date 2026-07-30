@@ -18,6 +18,7 @@ class TransactionItem extends Model
         'subtotal',
         'buy_price',
         'sell_price',
+        'purchase_type',
         'product_name',
         'product_unit',
         'product_category',

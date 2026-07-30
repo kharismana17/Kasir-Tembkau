@@ -19,7 +19,7 @@
         {{-- =====================================================
             SIDEBAR
         ====================================================== --}}
-        <aside id="sidebar" class="fixed left-0 top-0 z-50 flex h-screen w-72 -translate-x-full transform flex-col bg-[#292522] text-white shadow-2xl transition duration-300 ease-in-out lg:static lg:z-auto lg:h-auto lg:w-72 lg:translate-x-0 lg:flex lg:shadow-none xl:w-80">
+        <aside id="sidebar" class="fixed left-0 top-0 z-50 flex h-screen w-72 -translate-x-full transform flex-col bg-[#292522] text-white shadow-2xl transition duration-300 ease-in-out lg:translate-x-0 lg:flex lg:shadow-none xl:w-80">
 
             {{-- BRAND --}}
             <div class="border-b border-white/10 px-6 py-6">
@@ -365,6 +365,28 @@
 
                         </a>
 
+                        <a href="{{ route('admin.salaries.index') }}"
+                           class="group flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition
+                           {{ request()->routeIs('admin.salaries.*')
+                                ? 'bg-white/10 text-white'
+                                : 'text-[#C9C0B8] hover:bg-white/10 hover:text-white' }}">
+
+                            <svg class="h-5 w-5 shrink-0 opacity-80"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24">
+
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="1.8"
+                                      d="M4 7h16M4 11h16M4 15h16M4 19h16" />
+
+                            </svg>
+
+                            <span>Penggajian</span>
+
+                        </a>
+
                         <a href="{{ route('admin.audit-logs.index') }}"
                            class="group flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition
                            {{ request()->routeIs('admin.audit-logs.*')
@@ -453,7 +475,7 @@
         {{-- =====================================================
             MAIN CONTENT
         ====================================================== --}}
-        <div class="flex-1">
+        <div class="flex-1 lg:ml-72 xl:ml-80 overflow-hidden">
 
 
             {{-- HEADER --}}
@@ -526,7 +548,7 @@
 
 
             {{-- CONTENT --}}
-            <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+            <main class="h-screen overflow-y-auto mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
 
                 @yield('content')
 

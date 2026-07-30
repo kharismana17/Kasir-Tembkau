@@ -61,6 +61,7 @@ class SettingsController extends Controller
                 'tax_percentage' => 'required|numeric|min:0|max:100',
                 'rounding' => 'required|integer|min:0',
                 'transaction_number_format' => 'nullable|string|max:255',
+                'hourly_salary' => 'nullable|numeric|min:0',
             ]);
 
             $settings->update($data);

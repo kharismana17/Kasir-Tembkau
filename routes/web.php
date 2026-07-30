@@ -97,20 +97,6 @@ Route::middleware(['auth', 'active', 'role:kasir'])->prefix('pos')->name('pos.')
     Route::post('/checkout', [PosController::class, 'checkout'])
         ->name('checkout');
     
-    Route::post('/save', [PosController::class, 'save'])
-        ->name('save');
-    
-    Route::post('/save-order',
-        [PosController::class,'saveOrder'])
-        ->name('save');
-
-    Route::get('/load-order/{order}',
-        [PosController::class,'loadOrder'])
-        ->name('load');
-
-    Route::delete('/pos/delete-order/{order}',
-        [PosController::class,'deleteOrder'])
-        ->name('delete');
 });
 
 /*
@@ -156,6 +142,24 @@ Route::middleware(['auth', 'active', 'role:admin'])
 
         Route::get('/attendances/data', [AttendanceController::class, 'adminData'])
             ->name('attendances.data');
+
+        Route::get('/salaries', [\App\Http\Controllers\Admin\SalaryController::class, 'index'])
+            ->name('salaries.index');
+
+        Route::post('/salaries/calculate', [\App\Http\Controllers\Admin\SalaryController::class, 'calculate'])
+            ->name('salaries.calculate');
+
+        Route::post('/salaries/hourly-rate', [\App\Http\Controllers\Admin\SalaryController::class, 'updateHourlyRate'])
+            ->name('salaries.hourly-rate.update');
+
+        Route::get('/salaries/{salary}', [\App\Http\Controllers\Admin\SalaryController::class, 'show'])
+            ->name('salaries.show');
+
+        Route::post('/salaries/{salary}/pay', [\App\Http\Controllers\Admin\SalaryController::class, 'pay'])
+            ->name('salaries.pay');
+
+        Route::get('/salaries/{salary}/export-pdf', [\App\Http\Controllers\Admin\SalaryController::class, 'exportPdf'])
+            ->name('salaries.export-pdf');
 
         // Attendance users (names for absensi) - managed from Admin -> Absensi Kasir page
         Route::resource('attendances/users', \App\Http\Controllers\Admin\AttendanceUserController::class)

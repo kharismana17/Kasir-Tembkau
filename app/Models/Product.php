@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -18,8 +19,11 @@ class Product extends Model
         'description',
         'buy_price',
         'sell_price',
+        'wholesale_price',
+        'wholesale_min_qty',
         'stock',
         'stock_min',
+        'sale_type',
         'unit',
         'stock_unit',
         'selling_unit',
@@ -30,6 +34,8 @@ class Product extends Model
     protected $casts = [
         'buy_price' => 'decimal:2',
         'sell_price' => 'decimal:2',
+        'wholesale_price' => 'decimal:2',
+        'wholesale_min_qty' => 'integer',
         'stock' => 'integer',
         'stock_min' => 'integer',
         'is_active' => 'boolean',
@@ -42,36 +48,101 @@ class Product extends Model
 
     public function stockUnit()
     {
-        return $this->stock_unit ?? 'pcs';
+        if (! empty($this->stock_unit)) {
+            return $this->stock_unit;
+        }
+
+        return self::resolveUnitsBySaleType($this->saleType())['stock_unit'];
     }
 
     public function sellingUnit()
     {
-        return $this->selling_unit ?? 'pcs';
+        if (! empty($this->selling_unit)) {
+            return $this->selling_unit;
+        }
+
+        return self::resolveUnitsBySaleType($this->saleType())['selling_unit'];
+    }
+
+    /**
+     * Price unit helpers
+     * Current system stores `sell_price` as price per 100 gram (ons).
+     * Provide a single source to obtain price per gram for UI and calculations.
+     */
+    public function priceUnit(): string
+    {
+        // Default to 'ons' (price per 100 gram) because server logic uses sell_price * (qty/100)
+        return 'ons';
+    }
+
+    public function pricePerGram(): float
+    {
+        $price = (float) ($this->sell_price ?? 0);
+
+        if ($this->priceUnit() === 'gram') {
+            return $price;
+        }
+
+        // price per ons -> divide by 100
+        return $price / 100.0;
+    }
+
+    public function saleType(): string
+    {
+        if (! empty($this->sale_type)) {
+            return $this->sale_type;
+        }
+
+        return self::resolveSaleTypeByCategory($this->category_id);
     }
 
     public static function resolveUnitsByCategory($categoryId)
     {
+        $saleType = self::resolveSaleTypeByCategory($categoryId);
+
+        return self::resolveUnitsBySaleType($saleType);
+    }
+
+    public static function resolveSaleTypeByCategory($categoryId)
+    {
         $category = Category::find($categoryId);
         $categoryName = strtolower(trim($category?->name ?? ''));
 
-        $stockUnit = 'pcs';
-        $sellingUnit = 'pcs';
-
         if ($categoryName === 'tembakau') {
-            $stockUnit = 'gram';
-            $sellingUnit = 'gram';
-        } elseif (
+            return 'gram';
+        }
+
+        if (
             strpos($categoryName, 'pack') !== false ||
             strpos($categoryName, 'kemasan') !== false
         ) {
-            $stockUnit = 'pack';
-            $sellingUnit = 'pack';
+            return 'pack';
+        }
+
+        return 'pcs';
+    }
+
+    public static function resolveUnitsBySaleType(string $saleType)
+    {
+        $saleType = strtolower(trim($saleType));
+
+        if (str_contains($saleType, 'gram')) {
+            return [
+                'stock_unit' => 'gram',
+                'selling_unit' => 'gram',
+            ];
+        }
+
+        if (str_contains($saleType, 'pack')) {
+            return [
+                'stock_unit' => 'pack',
+                'selling_unit' => 'pack',
+            ];
         }
 
         return [
-            'stock_unit' => $stockUnit,
-            'selling_unit' => $sellingUnit,
+            'stock_unit' => 'pcs',
+            'selling_unit' => 'pcs',
         ];
     }
 

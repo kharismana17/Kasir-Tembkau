@@ -54,28 +54,6 @@
   </section>
 
   <section class="rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-5 shadow-sm sm:p-6">
-    <div class="grid gap-4 lg:grid-cols-3">
-      <div class="rounded-2xl border border-[#E7E1D9] bg-white p-5 shadow-sm">
-        <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#6B4F3A]">Status</p>
-        <p id="attendanceStatus" class="mt-3 text-lg font-semibold text-[#292522]">Belum memilih kasir</p>
-      </div>
-      <div class="rounded-2xl border border-[#E7E1D9] bg-white p-5 shadow-sm">
-        <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#6B4F3A]">Check In</p>
-        <p id="attendanceCheckIn" class="mt-3 text-lg font-semibold text-[#292522]">-</p>
-      </div>
-      <div class="rounded-2xl border border-[#E7E1D9] bg-white p-5 shadow-sm">
-        <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#6B4F3A]">Check Out</p>
-        <p id="attendanceCheckOut" class="mt-3 text-lg font-semibold text-[#292522]">-</p>
-      </div>
-    </div>
-
-    <div class="mt-5 rounded-2xl border border-[#E7E1D9] bg-white p-5 shadow-sm">
-      <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#6B4F3A]">Durasi Kerja</p>
-      <p id="attendanceWorkingMinutes" class="mt-3 text-lg font-semibold text-[#292522]">0 Menit</p>
-    </div>
-  </section>
-
-  <section class="rounded-[28px] border border-[#E7E1D9] bg-[#FBF9F6] p-5 shadow-sm sm:p-6">
     <div class="flex items-center justify-between">
       <div>
         <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-[#6B4F3A]">Riwayat Absensi</p>

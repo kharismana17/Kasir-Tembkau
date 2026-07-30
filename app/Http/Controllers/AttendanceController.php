@@ -22,13 +22,23 @@ class AttendanceController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Attach today's attendance record to each attendance user for status display
+        // Attach today's latest attendance record to each attendance user for status display.
+        // If there is an active session, prefer that record; otherwise use the latest completed session.
         $today = Carbon::now(config('app.timezone'))->toDateString();
         $todayRecords = Attendance::query()
             ->whereIn('attendance_user_id', $attendanceUsers->pluck('id')->all())
             ->whereDate('attendance_date', $today)
             ->get()
-            ->keyBy('attendance_user_id');
+            ->groupBy('attendance_user_id')
+            ->mapWithKeys(function ($group, $userId) {
+                $activeRecord = $group->first(fn (Attendance $record) => $record->check_out === null);
+                if ($activeRecord) {
+                    return [$userId => $activeRecord];
+                }
+
+                $latestRecord = $group->sortByDesc('created_at')->first();
+                return [$userId => $latestRecord];
+            });
 
         foreach ($attendanceUsers as $au) {
             $au->today_attendance = $todayRecords->has($au->id) ? $todayRecords->get($au->id) : null;
@@ -71,17 +81,19 @@ class AttendanceController extends Controller
         }
 
         $today = Carbon::now(config('app.timezone'))->toDateString();
-        $attendance = Attendance::query()
+        $activeAttendance = Attendance::query()
             ->where('attendance_user_id', $attendanceUser->id)
             ->whereDate('attendance_date', $today)
+            ->whereNull('check_out')
+            ->latest('check_in')
             ->first();
 
-        if ($attendance && ! $attendance->check_out) {
+        if ($activeAttendance) {
             $checkOut = Carbon::now(config('app.timezone'));
-            $checkIn = Carbon::createFromFormat('H:i:s', $attendance->check_in, config('app.timezone'));
+            $checkIn = Carbon::createFromFormat('H:i:s', $activeAttendance->check_in, config('app.timezone'));
             $workingMinutes = (int) floor($checkIn->diffInMinutes($checkOut));
 
-            $attendance->forceFill([
+            $activeAttendance->forceFill([
                 'check_out' => $checkOut->format('H:i:s'),
                 'working_minutes' => $workingMinutes,
                 'status' => 'completed',
@@ -95,17 +107,6 @@ class AttendanceController extends Controller
             }
 
             return redirect()->route('pos.attendance.index')->with('success', 'Check Out berhasil.');
-        }
-
-        if ($attendance && $attendance->check_out) {
-            if ($request->expectsJson() || $request->wantsJson()) {
-                return response()->json(array_merge($this->buildAttendancePayload($attendanceUser->id), [
-                    'success' => false,
-                    'message' => 'Tidak bisa check out lagi hari ini.',
-                ]), 422);
-            }
-
-            return redirect()->route('pos.attendance.index')->with('error', 'Tidak bisa check out lagi hari ini.');
         }
 
         Attendance::create([
@@ -132,11 +133,23 @@ class AttendanceController extends Controller
             return null;
         }
 
+        $today = Carbon::now(config('app.timezone'))->toDateString();
+
+        $activeAttendance = Attendance::query()
+            ->where('attendance_user_id', $userId)
+            ->whereDate('attendance_date', $today)
+            ->whereNull('check_out')
+            ->latest('check_in')
+            ->first();
+
+        if ($activeAttendance) {
+            return $activeAttendance;
+        }
+
         return Attendance::query()
             ->where('attendance_user_id', $userId)
-            ->whereDate('attendance_date', Carbon::now(config('app.timezone'))->toDateString())
-            ->orderByDesc('attendance_date')
-            ->orderByDesc('created_at')
+            ->whereDate('attendance_date', $today)
+            ->latest('check_in')
             ->first();
     }
 

@@ -68,10 +68,11 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::orderBy('name')->get();
-         $storeSettings = StoreSetting::first();
+        $storeSettings = StoreSetting::first();
+
         return view(
             'admin.products.create',
-            compact('categories')
+            compact('categories', 'storeSettings')
         );
     }
 
@@ -124,18 +125,34 @@ class ProductController extends Controller
                 'integer',
                 'min:0',
             ],
+
+            'sale_type' => [
+                'nullable',
+                'in:pcs,gram,pack,pcs_grosir,gram_grosir',
+            ],
+
+            'wholesale_price' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'wholesale_min_qty' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
         ]);
 
 
         /*
         |--------------------------------------------------------------------------
-        | UNIT OTOMATIS BERDASARKAN KATEGORI
+        | UNIT DAN TIPE JUAL
         |--------------------------------------------------------------------------
         */
 
-        $units = Product::resolveUnitsByCategory(
-            $data['category_id']
-        );
+        $data['sale_type'] = $data['sale_type'] ?? Product::resolveSaleTypeByCategory($data['category_id']);
+        $units = Product::resolveUnitsBySaleType($data['sale_type']);
 
         $data['stock_unit'] = $units['stock_unit'];
         $data['selling_unit'] = $units['selling_unit'];
@@ -265,18 +282,34 @@ class ProductController extends Controller
                 'integer',
                 'min:0',
             ],
+
+            'sale_type' => [
+                'nullable',
+                'in:pcs,gram,pack,pcs_grosir,gram_grosir',
+            ],
+
+            'wholesale_price' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'wholesale_min_qty' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
         ]);
 
 
         /*
         |--------------------------------------------------------------------------
-        | UNIT OTOMATIS
+        | UNIT DAN TIPE JUAL
         |--------------------------------------------------------------------------
         */
 
-        $units = Product::resolveUnitsByCategory(
-            $data['category_id']
-        );
+        $data['sale_type'] = $data['sale_type'] ?? Product::resolveSaleTypeByCategory($data['category_id']);
+        $units = Product::resolveUnitsBySaleType($data['sale_type']);
 
         $data['stock_unit'] = $units['stock_unit'];
         $data['selling_unit'] = $units['selling_unit'];

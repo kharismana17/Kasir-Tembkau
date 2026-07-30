@@ -255,6 +255,32 @@
               </select>
             </div>
 
+            {{-- TIPE JUAL --}}
+            <div>
+              <label
+                for="sale_type"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Tipe Jual
+              </label>
+
+              <select
+                id="sale_type"
+                name="sale_type"
+                class="w-full rounded-2xl border border-[#D9D2C9] bg-white px-4 py-3 text-sm text-[#292522] outline-none transition hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+              >
+                <option value="pcs" @selected(old('sale_type', $product->sale_type) === 'pcs')>PCS</option>
+                <option value="gram" @selected(old('sale_type', $product->sale_type) === 'gram')>GRAM</option>
+                <option value="pack" @selected(old('sale_type', $product->sale_type) === 'pack')>PACK</option>
+                <option value="pcs_grosir" @selected(old('sale_type', $product->sale_type) === 'pcs_grosir')>PCS (Grosir)</option>
+                <option value="gram_grosir" @selected(old('sale_type', $product->sale_type) === 'gram_grosir')>GRAM (Grosir)</option>
+              </select>
+
+              <p class="mt-2 text-xs text-[#9A9189]">
+                Tipe jual produk. Default otomatis berdasarkan kategori.
+              </p>
+            </div>
+
 
             {{-- SATUAN STOK --}}
             <div>
@@ -462,6 +488,59 @@
               </div>
             </div>
 
+            {{-- HARGA GROSIR --}}
+            <div>
+              <label
+                for="wholesale_price"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Harga Grosir
+              </label>
+
+              <div class="relative">
+
+                <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-semibold text-[#9A9189]">
+                  Rp
+                </span>
+
+                <input
+                  id="wholesale_price"
+                  name="wholesale_price"
+                  type="number"
+                  min="0"
+                  value="{{ old('wholesale_price', $product->wholesale_price) }}"
+                  class="w-full rounded-2xl border border-[#D9D2C9] bg-white py-3 pl-12 pr-4 text-sm font-semibold text-[#292522] outline-none transition hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+                >
+
+              </div>
+
+              <p class="mt-2 text-xs text-[#9A9189]">
+                Harga grosir opsional untuk pembelian dalam jumlah lebih besar.
+              </p>
+            </div>
+
+            {{-- MINIMUM GROSIR --}}
+            <div>
+              <label
+                for="wholesale_min_qty"
+                class="mb-2 block text-sm font-semibold text-[#4B443F]"
+              >
+                Minimum Qty Grosir
+              </label>
+
+              <input
+                id="wholesale_min_qty"
+                name="wholesale_min_qty"
+                type="number"
+                min="1"
+                value="{{ old('wholesale_min_qty', $product->wholesale_min_qty) }}"
+                class="w-full rounded-2xl border border-[#D9D2C9] bg-white py-3 px-4 text-sm font-semibold text-[#292522] outline-none transition hover:border-[#B9AEA3] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+              >
+
+              <p class="mt-2 text-xs text-[#9A9189]">
+                Minimal qty untuk harga grosir.
+              </p>
+            </div>
 
             {{-- HARGA JUAL --}}
             <div>
@@ -542,6 +621,7 @@
 
     <script>
       const categorySelect = document.getElementById('category_id');
+      const saleTypeSelect = document.getElementById('sale_type');
       const stockUnitDisplay = document.getElementById('stock_unit_display');
       const sellingUnitDisplay = document.getElementById('selling_unit_display');
       const stockLabel = document.getElementById('stockLabel');
@@ -575,6 +655,46 @@
         };
       }
 
+      function getSaleTypeByCategory(categoryName) {
+        const categoryLower = (categoryName ?? '').trim().toLowerCase();
+
+        if (categoryLower === 'tembakau') {
+          return 'gram';
+        }
+
+        if (
+          categoryLower.includes('pack') ||
+          categoryLower.includes('kemasan')
+        ) {
+          return 'pack';
+        }
+
+        return 'pcs';
+      }
+
+      function getUnitsBySaleType(saleType) {
+        const type = (saleType ?? '').trim().toLowerCase();
+
+        if (type === 'gram') {
+          return {
+            stock: 'gram',
+            selling: 'gram'
+          };
+        }
+
+        if (type === 'pack') {
+          return {
+            stock: 'pack',
+            selling: 'pack'
+          };
+        }
+
+        return {
+          stock: 'pcs',
+          selling: 'pcs'
+        };
+      }
+
       function updateProductUnitForm() {
         const selectedOption =
           categorySelect.options[categorySelect.selectedIndex];
@@ -582,8 +702,13 @@
         const categoryName =
           selectedOption?.textContent ?? '';
 
-        const units =
-          getUnitsByCategory(categoryName);
+        const inferredSaleType = getSaleTypeByCategory(categoryName);
+
+        if (! saleTypeSelect.value || saleTypeSelect.value === inferredSaleType) {
+          saleTypeSelect.value = inferredSaleType;
+        }
+
+        const units = getUnitsBySaleType(saleTypeSelect.value);
 
         stockUnitDisplay.value = units.stock;
         sellingUnitDisplay.value = units.selling;
@@ -602,6 +727,11 @@
       }
 
       categorySelect.addEventListener(
+        'change',
+        updateProductUnitForm
+      );
+
+      saleTypeSelect.addEventListener(
         'change',
         updateProductUnitForm
       );

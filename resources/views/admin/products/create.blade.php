@@ -237,6 +237,34 @@
 
                     </div>
 
+                    {{-- TIPE JUAL --}}
+                    <div>
+
+                        <label
+                            for="sale_type"
+                            class="mb-2 block text-sm font-semibold text-[#292522]"
+                        >
+                            Tipe Jual
+                        </label>
+
+                        <select
+                            id="sale_type"
+                            name="sale_type"
+                            class="w-full rounded-2xl border border-[#D9CEC4] bg-white px-4 py-3 text-sm text-[#292522] outline-none transition hover:border-[#B8AEA5] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+                        >
+                            <option value="pcs" @selected(old('sale_type') === 'pcs')>PCS</option>
+                            <option value="gram" @selected(old('sale_type') === 'gram')>GRAM</option>
+                            <option value="pack" @selected(old('sale_type') === 'pack')>PACK</option>
+                            <option value="pcs_grosir" @selected(old('sale_type') === 'pcs_grosir')>PCS (Grosir)</option>
+                            <option value="gram_grosir" @selected(old('sale_type') === 'gram_grosir')>GRAM (Grosir)</option>
+                        </select>
+
+                        <p class="mt-2 text-xs text-[#A3978D]">
+                            Tipe jual produk. Default otomatis berdasarkan kategori.
+                        </p>
+
+                    </div>
+
 
                     {{-- SATUAN STOK --}}
                     <div>
@@ -460,6 +488,63 @@
 
                     </div>
 
+                    {{-- HARGA GROSIR --}}
+                    <div>
+
+                        <label
+                            for="wholesale_price"
+                            class="mb-2 block text-sm font-semibold text-[#292522]"
+                        >
+                            Harga Grosir
+                        </label>
+
+                        <div class="relative">
+
+                            <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-semibold text-[#A3978D]">
+                                Rp
+                            </span>
+
+                            <input
+                                id="wholesale_price"
+                                name="wholesale_price"
+                                type="number"
+                                min="0"
+                                value="{{ old('wholesale_price', 0) }}"
+                                class="w-full rounded-2xl border border-[#D9CEC4] bg-white px-4 py-3 pl-12 text-sm text-[#292522] outline-none transition hover:border-[#B8AEA5] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+                            >
+
+                        </div>
+
+                        <p class="mt-2 text-xs text-[#A3978D]">
+                            Harga grosir opsional untuk pembelian dalam jumlah lebih besar.
+                        </p>
+
+                    </div>
+
+                    {{-- MINIMUM GROSIR --}}
+                    <div>
+
+                        <label
+                            for="wholesale_min_qty"
+                            class="mb-2 block text-sm font-semibold text-[#292522]"
+                        >
+                            Minimum Qty Grosir
+                        </label>
+
+                        <input
+                            id="wholesale_min_qty"
+                            name="wholesale_min_qty"
+                            type="number"
+                            min="1"
+                            value="{{ old('wholesale_min_qty', 1) }}"
+                            class="w-full rounded-2xl border border-[#D9CEC4] bg-white px-4 py-3 text-sm text-[#292522] outline-none transition hover:border-[#B8AEA5] focus:border-[#C68B59] focus:ring-4 focus:ring-[#C68B59]/10"
+                        >
+
+                        <p class="mt-2 text-xs text-[#A3978D]">
+                            Minimal qty untuk harga grosir.
+                        </p>
+
+                    </div>
 
                     {{-- HARGA JUAL --}}
                     <div>
@@ -543,6 +628,7 @@
 <script>
 
 const categorySelect = document.getElementById('category_id');
+const saleTypeSelect = document.getElementById('sale_type');
 
 const stockUnitDisplay = document.getElementById('stock_unit_display');
 
@@ -592,6 +678,46 @@ function getUnitsByCategory(categoryName) {
 
 }
 
+function getSaleTypeByCategory(categoryName) {
+    const categoryLower = (categoryName ?? '').trim().toLowerCase();
+
+    if (categoryLower === 'tembakau') {
+        return 'gram';
+    }
+
+    if (
+        categoryLower.includes('pack') ||
+        categoryLower.includes('kemasan')
+    ) {
+        return 'pack';
+    }
+
+    return 'pcs';
+}
+
+function getUnitsBySaleType(saleType) {
+    const type = (saleType ?? '').trim().toLowerCase();
+
+    if (type === 'gram') {
+        return {
+            stock: 'gram',
+            selling: 'gram'
+        };
+    }
+
+    if (type === 'pack') {
+        return {
+            stock: 'pack',
+            selling: 'pack'
+        };
+    }
+
+    return {
+        stock: 'pcs',
+        selling: 'pcs'
+    };
+}
+
 
 function updateProductUnitForm() {
 
@@ -601,8 +727,13 @@ function updateProductUnitForm() {
     const categoryName =
         selectedOption?.textContent ?? '';
 
-    const units =
-        getUnitsByCategory(categoryName);
+    const inferredSaleType = getSaleTypeByCategory(categoryName);
+
+    if (! saleTypeSelect.value || saleTypeSelect.value === inferredSaleType) {
+        saleTypeSelect.value = inferredSaleType;
+    }
+
+    const units = getUnitsBySaleType(saleTypeSelect.value);
 
 
     stockUnitDisplay.value = units.stock;
@@ -636,6 +767,11 @@ if (categorySelect.value) {
     updateProductUnitForm();
 
 }
+ 
+ saleTypeSelect.addEventListener(
+     'change',
+     updateProductUnitForm
+ );
 
 </script>
 

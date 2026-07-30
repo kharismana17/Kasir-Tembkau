@@ -12,11 +12,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 use App\Models\AuditLog;
+use App\Models\SavedOrder;
+use App\Models\SavedOrderItem;
+use App\Http\Controllers\Traits\CartHelpers;
 
 
 class PosController extends Controller
 {
+    use CartHelpers;
     /**
      * Display POS page.
      */
@@ -27,6 +32,10 @@ class PosController extends Controller
         $cart = $this->getCart();
         $summary = $this->calculateCartSummary($cart);
         $cartCount = count($cart);
+        $savedOrders = SavedOrder::where('user_id', auth()->id())
+            ->withCount('items')
+            ->latest()
+            ->get();
 
         return view('pos.index', [
             'products' => $products,
@@ -37,6 +46,7 @@ class PosController extends Controller
             'discount' => $summary['discount'],
             'grandTotal' => $summary['grandTotal'],
             'cartCount' => $cartCount,
+            'savedOrders' => $savedOrders,
         ]);
     }
 
@@ -75,15 +85,6 @@ class PosController extends Controller
 
         return view('pos.receipt', compact('transaction'));
     }
-
-    /**
-     * Save cart items.
-     */
-    public function save(Request $request)
-    {
-        return back()->with('success', 'Transaksi berhasil disimpan.');
-    }
-    
 
     /**
      * Process checkout and persist transaction.
@@ -136,15 +137,17 @@ class PosController extends Controller
                     );
                 }
 
-                if ($this->isTembakau($product)) {
-                    $itemSubtotal = $product->sell_price * ($item['qty'] / 100);
-                } else {
-                    $itemSubtotal = $product->sell_price * $item['qty'];
-                }
+                $itemPrice = $item['price'] ?? $product->sell_price;
+                $itemPurchaseType = $item['purchase_type'] ?? null;
+                $itemSubtotal = $item['subtotal'] ?? ($this->isTembakau($product)
+                    ? $itemPrice * ($item['qty'] / 100)
+                    : $itemPrice * $item['qty']);
 
                 return [
                     'product' => $product,
                     'qty' => $item['qty'],
+                    'price' => $itemPrice,
+                    'purchase_type' => $itemPurchaseType,
                     'subtotal' => $itemSubtotal,
                     'stock_reduction' => $stockReduction,
                 ];
@@ -241,11 +244,12 @@ class PosController extends Controller
                     'transaction_id' => $transaction->id,
                     'product_id' => $product->id,
                     'qty' => $item['qty'],
-                    'price' => $product->sell_price,
+                    'price' => $item['price'],
                     'discount' => 0,
                     'subtotal' => $item['subtotal'],
                     'buy_price' => $product->buy_price ?? 0,
                     'sell_price' => $product->sell_price ?? 0,
+                    'purchase_type' => $item['purchase_type'] ?? null,
                     'product_name' => $product->name ?? 'Produk telah dihapus',
                     'product_unit' => $product->unit ?? $product->stock_unit ?? 'pcs',
                     'product_category' => $product->category?->name ?? '-',
@@ -271,6 +275,17 @@ class PosController extends Controller
 
         session()->forget('cart');
 
+        // If this checkout was for a loaded saved order, remove it
+        $savedOrderId = session('saved_order_id');
+        if ($savedOrderId) {
+            $saved = SavedOrder::where('id', $savedOrderId)->where('user_id', auth()->id())->first();
+            if ($saved) {
+                $saved->items()->delete();
+                $saved->delete();
+            }
+            session()->forget('saved_order_id');
+        }
+
         return redirect()
             ->route('pos.receipt.page', ['transaction' => $transaction])
             ->with('success', 'Transaksi berhasil disimpan.');
@@ -282,47 +297,115 @@ class PosController extends Controller
     public function addToCart(Product $product)
     {
         if (! $product->is_active || $product->stock <= 0) {
-            return back()->with('error', 'Produk tidak tersedia.');
+            return response()->json(['success' => false, 'message' => 'Produk tidak tersedia.'], 404);
         }
 
         $cart = $this->getCart();
         $requestedQty = request()->input('qty');
+        $purchaseType = request()->input('purchase_type');
+        $inputMethod = request()->input('input_method');
+        $requestedPrice = request()->input('price');
 
         $qty = $requestedQty !== null ? $requestedQty + 0 : null;
-        $unit = $product->stockUnit();
+        $unit = $product->sellingUnit();
+        $saleType = $product->saleType();
+        $selectedPurchaseType = $purchaseType ?? ($saleType === 'gram' ? 'gram' : 'pcs');
+
+        $price = $requestedPrice !== null
+            ? (float) $requestedPrice
+            : (isset($cart[$product->id]['price']) ? (float) $cart[$product->id]['price'] : (float) $product->sell_price);
+
+        if ($purchaseType !== null) {
+            $price = $this->resolveCartPrice($product, $purchaseType);
+        }
 
         if (isset($cart[$product->id])) {
             $newQty = $qty === null ? $cart[$product->id]['qty'] + 1 : $cart[$product->id]['qty'] + $qty;
+            $currentPurchaseType = $purchaseType ?? ($cart[$product->id]['purchase_type'] ?? $selectedPurchaseType);
+
+            if ($currentPurchaseType === 'grosir') {
+                $minQty = $product->wholesale_min_qty ?? null;
+                if ($minQty !== null && $newQty < $minQty) {
+                    return response()->json(['success' => false, 'message' => "Minimal pembelian grosir adalah {$minQty} pcs."], 422);
+                }
+            }
+
             $requiredStock = $this->resolveStockReduction($product, $newQty);
 
             if ($requiredStock > $product->stock) {
-                return back()->with('error', 'Jumlah melebihi stok tersedia.');
+                return response()->json(['success' => false, 'message' => 'Jumlah melebihi stok tersedia.'], 422);
             }
 
             $cart[$product->id]['qty'] = $newQty;
             $cart[$product->id]['unit'] = $unit;
+            $cart[$product->id]['sale_type'] = $saleType;
+            $cart[$product->id]['purchase_type'] = $currentPurchaseType;
+            $cart[$product->id]['input_method'] = $inputMethod ?? ($cart[$product->id]['input_method'] ?? (str_contains($saleType, 'gram') ? 'berat' : null));
+            $cart[$product->id]['price'] = $price;
+            $cart[$product->id]['subtotal'] = $this->calculateCartItemSubtotal($product, $price, $newQty);
+            $cart[$product->id]['wholesale_price'] = (float) ($product->wholesale_price ?? 0);
+            $cart[$product->id]['wholesale_min_qty'] = (int) ($product->wholesale_min_qty ?? 0);
             $cart[$product->id]['is_tembakau'] = $this->isTembakau($product);
         } else {
             $initialQty = $qty === null ? 1 : $qty;
+            $selectedPurchaseType = $purchaseType ?? ($saleType === 'gram' ? 'gram' : 'pcs');
+
+            if ($selectedPurchaseType === 'grosir') {
+                $minQty = $product->wholesale_min_qty ?? null;
+                if ($minQty !== null && $initialQty < $minQty) {
+                    return response()->json(['success' => false, 'message' => "Minimal pembelian grosir adalah {$minQty} pcs."], 422);
+                }
+            }
+
             $requiredStock = $this->resolveStockReduction($product, $initialQty);
 
             if ($requiredStock > $product->stock) {
-                return back()->with('error', 'Jumlah melebihi stok tersedia.');
+                return response()->json(['success' => false, 'message' => 'Jumlah melebihi stok tersedia.'], 422);
             }
 
             $cart[$product->id] = [
                 'product_id' => $product->id,
                 'name' => $product->name,
-                'price' => $product->sell_price,
+                'price' => $price,
                 'qty' => $initialQty,
                 'unit' => $unit,
+                'sale_type' => $saleType,
+                'purchase_type' => $selectedPurchaseType,
+                'input_method' => $inputMethod ?? (str_contains($saleType, 'gram') ? 'berat' : null),
+                'subtotal' => $this->calculateCartItemSubtotal($product, $price, $initialQty),
+                'wholesale_price' => (float) ($product->wholesale_price ?? 0),
+                'wholesale_min_qty' => (int) ($product->wholesale_min_qty ?? 0),
                 'is_tembakau' => $this->isTembakau($product),
             ];
         }
 
         $this->saveCart($cart);
 
-        return back()->with('success', 'Produk berhasil ditambahkan ke keranjang.');
+        $summary = $this->calculateCartSummary($cart);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Produk berhasil ditambahkan ke keranjang.',
+            'cart_html' => view('pos.partials.cart-items', ['cart' => $cart])->render(),
+            'summary' => [
+                'items' => count($cart),
+                'gram' => collect($cart)->where('is_tembakau', true)->sum('qty'),
+                'subtotal' => $summary['subtotal'] ?? 0,
+                'grand_total' => $summary['grandTotal'] ?? $summary['grand_total'] ?? 0,
+            ],
+            'cart_count' => count($cart),
+        ]);
+    }
+
+    private function resolveCartPrice(Product $product, ?string $purchaseType): float
+    {
+        $defaultPrice = (float) ($product->sell_price ?? 0);
+
+        if ($purchaseType === 'grosir' && (float) ($product->wholesale_price ?? 0) > 0) {
+            return (float) $product->wholesale_price;
+        }
+
+        return $defaultPrice;
     }
 
     /**
@@ -330,15 +413,19 @@ class PosController extends Controller
      */
     public function updateCart(Request $request, Product $product)
     {
-        if ($this->isTembakau($product)) {
-            $data = $request->validate([
-                'qty' => ['required', 'numeric', 'gt:0'],
-            ]);
+        $rules = [];
+
+        // accept optional purchase_type and input_method
+        $rules['purchase_type'] = ['nullable', 'string'];
+        $rules['input_method'] = ['nullable', 'string'];
+
+        if ($product->saleType() && str_contains($product->saleType(), 'gram')) {
+            $rules['qty'] = ['required', 'numeric', 'gt:0'];
         } else {
-            $data = $request->validate([
-                'qty' => ['required', 'integer', 'min:1'],
-            ]);
+            $rules['qty'] = ['required', 'integer', 'min:1'];
         }
+
+        $data = $request->validate($rules);
 
         $cart = $this->getCart();
 
@@ -352,7 +439,25 @@ class PosController extends Controller
             return back()->with('error', 'Jumlah melebihi stok tersedia.');
         }
 
+        // enforce wholesale minima when applicable
+        $purchaseType = $data['purchase_type'] ?? ($cart[$product->id]['purchase_type'] ?? null);
+        if ($purchaseType === 'grosir') {
+            $min = $product->wholesale_min_qty ?? null;
+            if ($min !== null && $data['qty'] < $min) {
+                $unitLabel = str_contains($product->saleType(), 'gram') ? 'gram' : 'pcs';
+                return back()->with('error', "Minimal pembelian grosir adalah {$min} {$unitLabel}.");
+            }
+        }
+
         $cart[$product->id]['qty'] = $data['qty'];
+        if (isset($data['purchase_type'])) {
+            $cart[$product->id]['purchase_type'] = $data['purchase_type'];
+            $cart[$product->id]['price'] = $this->resolveCartPrice($product, $data['purchase_type']);
+        }
+        if (isset($data['input_method'])) $cart[$product->id]['input_method'] = $data['input_method'];
+        if (isset($data['price'])) $cart[$product->id]['price'] = (float) $data['price'];
+        $cart[$product->id]['subtotal'] = $this->calculateCartItemSubtotal($product, $cart[$product->id]['price'], $cart[$product->id]['qty']);
+
         $this->saveCart($cart);
 
         return back()->with('success', 'Jumlah produk berhasil diperbarui.');
@@ -361,6 +466,15 @@ class PosController extends Controller
     /**
      * Remove a product from the cart.
      */
+    private function calculateCartItemSubtotal(Product $product, float $price, float $qty): float
+    {
+        if ($this->isTembakau($product)) {
+            return $price * ($qty / 100);
+        }
+
+        return $price * $qty;
+    }
+
     public function removeFromCart(Product $product)
     {
         $cart = $this->getCart();
@@ -388,95 +502,7 @@ class PosController extends Controller
     /**
      * Get the current cart from session and normalize it.
      */
-    private function getCart(): array
-    {
-        $cart = session('cart', []);
-
-        $normalizedCart = $this->normalizeCart($cart);
-        $this->saveCart($normalizedCart);
-
-        return $normalizedCart;
-    }
-
-    /**
-     * Persist the cart back to session.
-     */
-    private function saveCart(array $cart): void
-    {
-        session()->put('cart', $cart);
-    }
-
-    /**
-     * Normalize cart items and enrich them with product details.
-     */
-    private function normalizeCart(array $cart): array
-    {
-        $productIds = collect($cart)
-            ->pluck('product_id')
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-
-        $products = Product::whereIn('id', $productIds)
-            ->get()
-            ->keyBy('id');
-
-        return collect($cart)
-            ->map(function ($item) use ($products) {
-                $product = $products->get($item['product_id']);
-
-                if (! $product) {
-                    return $item;
-                }
-
-                $item['unit'] = $item['unit'] ?? $product->unit;
-                $item['is_tembakau'] = $this->isTembakau($product);
-
-                return $item;
-            })
-            ->toArray();
-    }
-
-    /**
-     * Calculate price summary for the cart.
-     */
-    private function calculateCartSummary(array $cart, ?array $items = null): array
-    {
-        $subtotal = $items !== null
-            ? (float) collect($items)->sum('subtotal')
-            : (float) collect($cart)->sum(function ($item) {
-                $price = (float) ($item['price'] ?? 0);
-                $qty = (float) ($item['qty'] ?? 0);
-
-                if ($item['is_tembakau'] ?? false) {
-                    return $price * ($qty / 100);
-                }
-
-                return $price * $qty;
-            });
-
-        $storeSettings = $this->getStoreSettings();
-        $discount = 0;
-        $taxPercentage = (float) ($storeSettings->tax_percentage ?? 0);
-        $taxAmount = $taxPercentage > 0
-            ? round($subtotal * ($taxPercentage / 100), 2)
-            : 0;
-
-        $rounding = (int) ($storeSettings->rounding ?? 0);
-        $grandTotal = $subtotal + $taxAmount - $discount;
-
-        if ($rounding > 0) {
-            $grandTotal = round($grandTotal / $rounding) * $rounding;
-        }
-
-        return [
-            'subtotal' => $subtotal,
-            'taxAmount' => $taxAmount,
-            'discount' => $discount,
-            'grandTotal' => $grandTotal,
-        ];
-    }
+    // Cart helper methods moved to CartHelpers trait.
 
     /**
      * Get active products for the POS catalog.
@@ -498,44 +524,6 @@ class PosController extends Controller
         return PaymentMethod::where('is_active', true)
             ->orderBy('name')
             ->get();
-    }
-
-    /**
-     * Get store settings.
-     */
-    private function getStoreSettings(): StoreSetting
-    {
-        $storeSettings = StoreSetting::first();
-
-        if (! $storeSettings) {
-            $storeSettings = new StoreSetting();
-            $storeSettings->tax_percentage = 0;
-            $storeSettings->rounding = 0;
-            $storeSettings->transaction_number_format = null;
-        }
-
-        return $storeSettings;
-    }
-
-    protected function resolveStockReduction(Product $product, float $qty): int
-    {
-        return (int) round($qty);
-    }
-
-    protected function isValidCartQuantity(Product $product, $qty): bool
-    {
-        // For tembakau (measured in grams), allow any numeric quantity
-        if (($product->stock_unit ?? '') === 'gram' || ($product->selling_unit ?? '') === 'gram') {
-            return is_numeric($qty) && $qty > 0;
-        }
-
-        // For regular items, require integer quantity
-        return is_int($qty + 0) || floor($qty) == $qty;
-    }
-
-    protected function isTembakau(Product $product): bool
-    {
-        return $product->selling_unit === 'gram' || $product->stock_unit === 'gram';
     }
 
     /**
@@ -692,11 +680,21 @@ class PosController extends Controller
                 'product' => [
                     'id' => (int) $product->id,
                     'name' => $product->name,
+                    'category_name' => $product->category?->name ?? '-',
                     'price' => (float) $product->sell_price,
                     'barcode' => $product->barcode,
                     'stock' => (int) $product->stock,
                     'selling_unit' => $product->selling_unit,
+                    'sale_type' => $product->saleType(),
+                    'wholesale_price' => (float) ($product->wholesale_price ?? 0),
+                    'wholesale_min_qty' => (int) ($product->wholesale_min_qty ?? 0),
+                    'wholesale_price_per_gram' => $product->saleType() && str_contains($product->saleType(), 'gram')
+                        ? round((float) ($product->wholesale_price ?? 0) / 100, 2)
+                        : null,
                     'is_tembakau' => $this->isTembakau($product),
+                    // price unit metadata for client-side conversions
+                    'price_unit' => $product->priceUnit(),
+                    'price_per_gram' => (float) $product->pricePerGram(),
                 ],
             ];
 
@@ -778,6 +776,26 @@ class PosController extends Controller
         $salesCount = (clone $salesQuery)->count();
         $totalSales = (float) (clone $salesQuery)->sum('total');
 
+        $cashSalesQuery = (clone $salesQuery)->whereHas('paymentMethod', function ($query) {
+            $query->where(function ($query) {
+                $query->where('name', 'like', '%cash%')
+                    ->orWhere('name', 'like', '%tunai%')
+                    ->orWhere('code', 'like', '%cash%')
+                    ->orWhere('code', 'like', '%tunai%');
+            });
+        });
+
+        $nonCashSalesQuery = (clone $salesQuery)->where(function ($query) {
+            $query->whereHas('paymentMethod', function ($query) {
+                $query->where(function ($query) {
+                    $query->where('name', 'not like', '%cash%')
+                        ->where('name', 'not like', '%tunai%')
+                        ->where('code', 'not like', '%cash%')
+                        ->where('code', 'not like', '%tunai%');
+                });
+            });
+        });
+
         $transactionIds = (clone $salesQuery)->pluck('id');
         $totalItemsSold = 0;
 
@@ -790,6 +808,11 @@ class PosController extends Controller
             'total_sales' => round($totalSales, 2),
             'total_items_sold' => $totalItemsSold,
             'average_transaction_value' => $salesCount > 0 ? round($totalSales / $salesCount, 2) : 0,
+            'total_cash_sales' => round((float) $cashSalesQuery->sum('total'), 2),
+            'cash_transaction_count' => (int) $cashSalesQuery->count(),
+            'total_non_cash_sales' => round((float) $nonCashSalesQuery->sum('total'), 2),
+            'non_cash_transaction_count' => (int) $nonCashSalesQuery->count(),
+            'grand_total' => round($totalSales, 2),
         ];
 
         $categories = [];
@@ -830,6 +853,7 @@ class PosController extends Controller
         $query = Transaction::query()
             ->where('user_id', auth()->id())
             ->with([
+                'user',
                 'items' => function ($query) {
                     $query->with(['product' => function ($query) {
                         $query->with('category');
@@ -839,7 +863,10 @@ class PosController extends Controller
             ]);
 
         $filter = $request?->input('filter', 'all') ?? 'all';
+        $paymentType = $request?->input('payment_type', 'all') ?? 'all';
         $search = trim((string) ($request?->input('search', '') ?? ''));
+        $fromDate = trim((string) ($request?->input('from_date', '') ?? ''));
+        $toDate = trim((string) ($request?->input('to_date', '') ?? ''));
 
         if ($filter === 'today') {
             $query->whereDate('created_at', now()->toDateString());
@@ -849,8 +876,41 @@ class PosController extends Controller
             $query->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
         }
 
+        if ($fromDate !== '') {
+            $query->whereDate('created_at', '>=', Carbon::parse($fromDate)->toDateString());
+        }
+
+        if ($toDate !== '') {
+            $query->whereDate('created_at', '<=', Carbon::parse($toDate)->toDateString());
+        }
+
+        if ($paymentType === 'cash') {
+            $query->whereHas('paymentMethod', function ($query) {
+                $query->where(function ($query) {
+                    $query->where('name', 'like', '%cash%')
+                        ->orWhere('name', 'like', '%tunai%')
+                        ->orWhere('code', 'like', '%cash%')
+                        ->orWhere('code', 'like', '%tunai%');
+                });
+            });
+        } elseif ($paymentType === 'non_cash') {
+            $query->whereHas('paymentMethod', function ($query) {
+                $query->where(function ($query) {
+                    $query->where('name', 'not like', '%cash%')
+                        ->where('name', 'not like', '%tunai%')
+                        ->where('code', 'not like', '%cash%')
+                        ->where('code', 'not like', '%tunai%');
+                });
+            });
+        }
+
         if ($search !== '') {
-            $query->where('invoice_no', 'like', "%{$search}%");
+            $query->where(function ($query) use ($search) {
+                $query->where('invoice_no', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    });
+            });
         }
 
         return $query;

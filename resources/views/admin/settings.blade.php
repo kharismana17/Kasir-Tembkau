@@ -192,6 +192,12 @@
                         <p class="mt-2 text-xs text-[#A3978D]">Gunakan placeholder seperti {Y}{m}{d} dan {seq} untuk sequence.</p>
                     </div>
 
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-[#292522]">Tarif per Jam</label>
+                        <input name="hourly_salary" type="number" step="0.01" min="0" value="{{ old('hourly_salary', $settings->hourly_salary ?? 0) }}" class="w-full rounded-2xl border border-[#D9CEC4] bg-white px-4 py-3 text-sm text-[#292522] outline-none" />
+                        <p class="mt-2 text-xs text-[#A3978D]">Masukkan tarif per jam untuk perhitungan gaji kasir.</p>
+                    </div>
+
                 </div>
 
                 <div class="mt-6 flex items-center justify-end gap-3">

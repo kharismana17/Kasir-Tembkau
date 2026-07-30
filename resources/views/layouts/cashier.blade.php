@@ -17,11 +17,11 @@
         $currentUser = auth()->user();
     @endphp
 
-    <div class="flex min-h-screen flex-col lg:flex-row">
+    <div class="relative min-h-screen overflow-hidden">
 
         <div id="cashierOverlay" class="fixed inset-0 z-30 hidden bg-black/35 lg:hidden" onclick="toggleCashierSidebar()"></div>
 
-        <aside id="cashierSidebar" class="fixed inset-y-0 left-0 z-40 hidden w-80 -translate-x-full transform bg-[#292522] text-white shadow-2xl transition lg:static lg:flex lg:w-80 lg:translate-x-0 lg:flex-col lg:shadow-none">
+        <aside id="cashierSidebar" class="fixed left-0 top-0 z-40 hidden h-screen w-80 -translate-x-full transform overflow-y-auto overflow-x-hidden bg-[#292522] text-white shadow-2xl transition lg:flex lg:translate-x-0 lg:flex-col lg:shadow-none">
 
             <div class="border-b border-white/10 px-5 py-6 lg:px-6">
                 <div class="flex items-center gap-3">
@@ -114,7 +114,7 @@
             </div>
         </aside>
 
-        <div class="flex-1">
+        <div class="flex-1 lg:ml-80 overflow-hidden">
             <header class="sticky top-0 z-20 border-b border-[#E7E1D9] bg-[#FBF9F6]/90 backdrop-blur">
                 <div class="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
                     <div class="flex items-center gap-3">
@@ -160,7 +160,7 @@
                 </div>
             </header>
 
-            <main class="px-4 py-6 sm:px-6 lg:px-8">
+            <main class="h-screen overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
                 @if (session('success'))
                     <div class="mb-5 rounded-2xl border border-[#D9C19D] bg-[#F4EFE6] p-4 text-sm font-semibold text-[#8A5B1E] shadow-sm">
                         {{ session('success') }}

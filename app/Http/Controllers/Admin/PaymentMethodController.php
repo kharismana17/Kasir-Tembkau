@@ -23,17 +23,15 @@ class PaymentMethodController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge([
+            'is_active' => $request->boolean('is_active'),
+        ]);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', 'unique:payment_methods,code'],
             'is_active' => ['nullable', 'boolean'],
-        ], [
-            'name.required' => 'Nama metode pembayaran wajib diisi.',
-            'code.required' => 'Kode metode pembayaran wajib diisi.',
-            'code.unique' => 'Kode metode pembayaran sudah digunakan.',
         ]);
-
-        $data['is_active'] = $request->boolean('is_active');
 
         PaymentMethod::create($data);
 
