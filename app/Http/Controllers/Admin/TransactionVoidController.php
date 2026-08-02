@@ -50,10 +50,17 @@ class TransactionVoidController extends Controller
                     $restore = (int) round($item->qty);
                 }
 
-                $product->increment('stock', $restore);
+                $locationId = $transaction->location_id ?? Auth::user()?->cashierUnit?->location_id;
+
+                if ($locationId) {
+                    $product->addStock($locationId, $restore);
+                } else {
+                    $product->incrementStock($restore);
+                }
 
                 StockMovement::create([
                     'product_id' => $product->id,
+                    'location_id' => $locationId,
                     'change' => $restore,
                     'type' => 'stock_in',
                     'reference_type' => 'void',

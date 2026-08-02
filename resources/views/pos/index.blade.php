@@ -98,17 +98,28 @@
             </div>
 
             <div class="mt-auto border-t border-[#E7E1D9] pt-4">
-              @if ($cartCount > 0)
-                <div class="flex flex-col gap-3 sm:flex-row">
-                  <form action="{{ route('saved-orders.save') }}" method="POST" class="flex-1">@csrf<button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl border border-[#292522] bg-white px-4 py-3 text-sm font-bold text-[#292522] transition hover:bg-gray-100">Simpan</button></form>
-                  <a href="{{ route('pos.checkout.page') }}" id="openCheckoutButton" class="inline-flex flex-1 items-center justify-center rounded-2xl bg-[#292522] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#302F2A]">Bayar</a>
-                </div>
-              @else
-                <div class="flex flex-col gap-3 sm:flex-row">
-                  <button disabled class="inline-flex w-full items-center justify-center rounded-2xl border border-gray-300 bg-gray-200 px-4 py-3 text-sm font-bold text-gray-500 cursor-not-allowed">Simpan</button>
-                  <button disabled class="inline-flex w-full items-center justify-center rounded-2xl bg-gray-300 px-4 py-3 text-sm font-bold text-white cursor-not-allowed">Bayar</button>
-                </div>
-              @endif
+              <div class="flex flex-col gap-3 sm:flex-row">
+
+                  <form id="saveOrderForm" action="{{ route('saved-orders.save') }}" method="POST" class="flex-1">
+                      @csrf
+
+                      <button
+                          id="saveButton"
+                          type="submit"
+                          class="inline-flex w-full items-center justify-center rounded-2xl border px-4 py-3 text-sm font-bold transition border-[#292522] bg-white text-[#292522] hover:bg-gray-100">
+                          Simpan
+                      </button>
+
+                  </form>
+
+                  <a
+                      id="openCheckoutButton"
+                      href="{{ route('pos.checkout.page') }}"
+                      class="inline-flex flex-1 items-center justify-center rounded-2xl px-4 py-3 text-sm font-bold text-white transition bg-[#292522] hover:bg-[#302F2A]">
+                      Bayar
+                  </a>
+
+              </div>
             </div>
           </div>
         </section>
@@ -119,33 +130,9 @@
             <h2 class="mt-1 text-xl font-bold text-[#292522]">Order Tersimpan</h2>
           </div>
 
-          @if ($savedOrders->isEmpty())
-            <div class="rounded-2xl bg-white p-6 text-center text-sm font-medium text-[#6B4F3A]">Tidak ada order yang disimpan.</div>
-          @else
-            <div class="space-y-4">
-              @foreach ($savedOrders as $savedOrder)
-                <div class="rounded-[22px] border border-[#E7E1D9] bg-white p-4 shadow-sm">
-                  <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <p class="text-sm font-semibold text-[#292522]">🧾 Hold #{{ $savedOrder->id }}</p>
-                      <p class="mt-1 text-xs text-[#6B4F3A]">{{ $savedOrder->total_items }} Barang • Rp {{ number_format($savedOrder->total, 0, ',', '.') }}</p>
-                    </div>
-                    <div class="flex gap-2">
-                      <form method="POST" action="{{ route('saved-orders.load', ['savedOrder' => $savedOrder->id]) }}">
-                        @csrf
-                        <button type="submit" class="rounded-2xl bg-[#292522] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#3A352F]">Load</button>
-                      </form>
-                      <form method="POST" action="{{ route('saved-orders.delete', ['savedOrder' => $savedOrder->id]) }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="rounded-2xl border border-[#E7E1D9] bg-white px-3 py-2 text-xs font-bold text-[#292522] transition hover:bg-[#F4EFE6]">Hapus</button>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              @endforeach
-            </div>
-          @endif
+          <div id="savedOrdersContainer">
+            @include('pos.partials.saved-orders', ['savedOrders' => $savedOrders])
+          </div>
         </section>
       </div>
     </div>
@@ -171,31 +158,11 @@
                 </div>
                 <span class="text-sm font-semibold text-[#6B4F3A]">{{ $totalItems }} item</span>
               </div>
-
-              <div class="space-y-3">
-                @forelse ($cart as $item)
-                  @php
-                    $isTembakauItem = (bool) ($item['is_tembakau'] ?? false);
-                    $itemUnitLabel = $isTembakauItem ? 'gram' : ($item['unit'] ?? 'pcs');
-                    $itemLineTotal = $isTembakauItem
-                      ? $item['price'] * ($item['qty'] / 100)
-                      : $item['price'] * $item['qty'];
-                  @endphp
-                  <div class="rounded-xl border border-[#E7E1D9] bg-white p-4 shadow-sm">
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div class="min-w-0">
-                        <p class="text-base font-bold text-[#292522] truncate">{{ $item['name'] }}</p>
-                        <p class="mt-2 text-sm text-[#6B4F3A]">{{ $item['qty'] }} {{ $itemUnitLabel }} @if(!empty($item['purchase_type'])) • {{ ucfirst($item['purchase_type']) }} @endif</p>
-                      </div>
-                      <div class="text-right">
-                        <p class="text-sm font-semibold text-[#6B4F3A]">Subtotal</p>
-                        <p class="mt-1 text-base font-bold text-[#8A5B1E]">Rp {{ number_format($itemLineTotal, 0, ',', '.') }}</p>
-                      </div>
-                    </div>
-                  </div>
-                @empty
-                  <div class="rounded-xl border border-[#E7E1D9] bg-white p-6 text-center text-sm text-[#6B4F3A]">Keranjang kosong.</div>
-                @endforelse
+              <div id="checkoutItemsContainer" class="mt-4 space-y-3">
+                  @include('pos.partials.checkout-items', [
+                      'cart' => $cart,
+                      'totalItems' => $totalItems,
+                  ])
               </div>
             </section>
 
@@ -309,6 +276,14 @@
                     <p class="text-sm font-bold text-[#8A5B1E]">Total Pembayaran</p>
                     <p class="mt-1 text-lg font-bold text-[#292522]">Rp {{ number_format($grandTotal, 0, ',', '.') }}</p>
                   </div>
+                </div>
+                <div class="sticky bottom-0 mt-6 border-t border-[#E7E1D9] bg-white pt-4">
+                    <button
+                        id="checkoutSubmitButton"
+                        type="submit"
+                        class="w-full rounded-2xl bg-[#292522] px-5 py-4 text-base font-bold text-white transition hover:bg-[#3A3532] disabled:cursor-not-allowed disabled:bg-gray-300">
+                        Bayar Sekarang
+                    </button>
                 </div>
               </form>
             </section>
@@ -508,6 +483,7 @@
       summaryItems: document.getElementById('summaryItems'),
       summaryGram: document.getElementById('summaryGram'),
       summarySubtotal: document.getElementById('summarySubtotal'),
+      checkoutItemsContainer: document.getElementById('checkoutItemsContainer'),
       summaryGrandTotal: document.getElementById('summaryGrandTotal'),
       checkoutSubtotalText: document.getElementById('checkoutSubtotalText'),
       checkoutTaxText: document.getElementById('checkoutTaxText'),
@@ -515,6 +491,8 @@
       checkoutGrandTotalText: document.getElementById('checkoutGrandTotalText'),
       qrisTotalText: document.getElementById('qrisTotalText'),
       paymentMethodHidden: document.getElementById('payment_method'),
+      saveOrderForm: document.getElementById('saveOrderForm'),
+      savedOrdersContainer: document.getElementById('savedOrdersContainer'),
       paymentMethodCards: document.querySelectorAll('.payment-method-card'),
       paymentMethodRadios: document.querySelectorAll('.payment-method-radio'),
       paidAmount: document.getElementById('paid_amount'),
@@ -675,6 +653,7 @@
       if (dom.summaryGrandTotal) dom.summaryGrandTotal.textContent = Number(summary.grandTotal ?? summary.grand_total ?? 0).toLocaleString('id-ID');
       if (dom.topSummaryItems) dom.topSummaryItems.textContent = summary.items ?? summary.item_count ?? 0;
       if (dom.topSummarySubtotal) dom.topSummarySubtotal.textContent = `Rp ${Number(summary.subtotal ?? summary.subTotal ?? 0).toLocaleString('id-ID')}`;
+      updateCheckoutButtons(summary.items ?? 0);
     }
 
     function bindCartItemEvents() {
@@ -705,13 +684,146 @@
       dom.cartEventsBound = true;
     }
 
+    function updateCheckoutButtons(cartCount) {
+
+        const saveButton = document.getElementById('saveButton');
+        const payButton = document.getElementById('openCheckoutButton');
+        const checkoutSubmit = document.getElementById('checkoutSubmitButton');
+        const checkoutSubmitBtn = document.getElementById('checkoutSubmitBtn');
+
+        if (saveButton) {
+            if (cartCount > 0) {
+                saveButton.disabled = false;
+                saveButton.removeAttribute('disabled');
+                saveButton.classList.remove('cursor-not-allowed');
+            } else {
+                saveButton.disabled = true;
+                saveButton.setAttribute('disabled', 'disabled');
+                saveButton.classList.add('cursor-not-allowed');
+            }
+        }
+
+        if (payButton) {
+            if (cartCount > 0) {
+                payButton.classList.remove('pointer-events-none');
+                payButton.classList.remove('bg-gray-300');
+                payButton.classList.add('bg-[#292522]');
+                payButton.classList.add('hover:bg-[#302F2A]');
+            } else {
+                payButton.classList.add('pointer-events-none');
+                payButton.classList.add('bg-gray-300');
+                payButton.classList.remove('bg-[#292522]');
+                payButton.classList.remove('hover:bg-[#302F2A]');
+            }
+        }
+
+        if (checkoutSubmit) {
+            checkoutSubmit.disabled = cartCount === 0;
+            checkoutSubmit.classList.toggle('opacity-50', cartCount === 0);
+            checkoutSubmit.classList.toggle('cursor-not-allowed', cartCount === 0);
+        }
+
+        if (checkoutSubmitBtn) {
+            checkoutSubmitBtn.disabled = cartCount === 0;
+            checkoutSubmitBtn.classList.toggle('opacity-50', cartCount === 0);
+            checkoutSubmitBtn.classList.toggle('cursor-not-allowed', cartCount === 0);
+        }
+    }
+
     function updateCartUI(html, summary) {
       if (dom.cartItemsContainer) {
         dom.cartItemsContainer.innerHTML = html;
       }
       updateSummaryUI(summary);
+      if (document.body) {
+        document.body.dataset.cartCount = String(summary.items ?? 0);
+      }
       dom.cartEventsBound = false;
       bindCartItemEvents();
+      updateCheckoutButtons(summary.items ?? 0);
+    }
+
+    function updateCheckoutItems(html) {
+      if (dom.checkoutItemsContainer) {
+        dom.checkoutItemsContainer.innerHTML = html;
+      }
+    }
+
+    function updateSavedOrders(html) {
+      const container = dom.savedOrdersContainer || document.getElementById('savedOrdersContainer');
+      if (container) {
+        container.innerHTML = html;
+        dom.savedOrdersContainer = container;
+        dom.savedOrdersBound = false;
+        bindSavedOrderEvents();
+      }
+    }
+
+    function handleSavedOrderFormSubmit(event) {
+      const form = event.target.closest('form[data-saved-order-action]');
+      if (!form) return;
+      event.preventDefault();
+
+      const action = form.action;
+      const formData = new FormData(form);
+      formData.append('_token', dom.csrfToken);
+      const overrideMethod = form.querySelector('input[name="_method"]')?.value?.toUpperCase();
+      const formMethod = (form.method || 'POST').toUpperCase();
+      const method = overrideMethod ? 'POST' : formMethod;
+
+      if (overrideMethod && !formData.has('_method')) {
+        formData.append('_method', overrideMethod);
+      }
+
+      fetch(action, {
+        method,
+        credentials: 'same-origin',
+        headers: {
+          'X-CSRF-TOKEN': dom.csrfToken,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+        body: formData,
+      })
+        .then(async (response) => {
+          const contentType = response.headers.get('Content-Type') || '';
+          let result = null;
+          if (contentType.includes('application/json')) {
+            result = await response.json();
+          }
+          if (!response.ok || !result?.success) {
+            const message = result?.message || 'Terjadi kesalahan saat memproses order.';
+            showMessage(message, 'error');
+            focusBarcode();
+            return;
+          }
+
+          if (result.cart_html) {
+            updateCartUI(result.cart_html, result.summary ?? {});
+          }
+          if (result.checkout_html) {
+            updateCheckoutItems(result.checkout_html);
+          }
+          if (result.saved_orders_html) {
+            updateSavedOrders(result.saved_orders_html);
+          }
+          if (result.summary) {
+            updateSummaryUI(result.summary);
+          }
+          updateCheckoutButtons(result.cart_count ?? 0);
+          showMessage(result.message || 'Perubahan berhasil disimpan.', 'success');
+          focusBarcode();
+        })
+        .catch((error) => {
+          showMessage(error?.message || 'Terjadi kesalahan jaringan.', 'error');
+          focusBarcode();
+        });
+    }
+
+    function bindSavedOrderEvents() {
+      if (!dom.savedOrdersContainer || dom.savedOrdersBound) return;
+      dom.savedOrdersContainer.addEventListener('submit', handleSavedOrderFormSubmit);
+      dom.savedOrdersBound = true;
     }
 
     function openModal(modal) {
@@ -768,8 +880,11 @@
       try {
         const response = await fetch(url, {
           method: 'POST',
+          credentials: 'same-origin',
           headers: {
+            'X-CSRF-TOKEN': dom.csrfToken,
             'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
           },
           body: formData,
         });
@@ -808,6 +923,13 @@
         if (result.cart_html) {
           updateCartUI(result.cart_html, result.summary ?? {});
         }
+
+        if (result.checkout_html && dom.checkoutItemsContainer) {
+          dom.checkoutItemsContainer.innerHTML = result.checkout_html;
+        }
+
+        updateCheckoutButtons(result.cart_count ?? result.summary?.items ?? 0);
+        updateCheckoutSummary(result.summary ?? {});
 
         showMessage(result.message || 'Produk berhasil ditambahkan ke keranjang.', 'success');
         return result;
@@ -875,6 +997,54 @@
         dom.cameraSelect.appendChild(option);
       });
       return cameras;
+    }
+
+    function updateCheckoutSummary(summary) {
+        if (dom.checkoutSubtotalText) {
+            dom.checkoutSubtotalText.textContent =
+                'Rp ' + Number(summary.subtotal ?? 0).toLocaleString('id-ID');
+        }
+
+        if (dom.checkoutDiscountText) {
+            dom.checkoutDiscountText.textContent =
+                'Rp ' + Number(summary.discount ?? 0).toLocaleString('id-ID');
+        }
+
+        if (dom.checkoutTaxText) {
+            dom.checkoutTaxText.textContent =
+                'Rp ' + Number(summary.tax ?? 0).toLocaleString('id-ID');
+        }
+
+        if (dom.checkoutGrandTotalText) {
+            dom.checkoutGrandTotalText.textContent =
+                'Rp ' + Number(summary.grand_total ?? 0).toLocaleString('id-ID');
+        }
+    }
+
+    function updateCheckoutModal(summary = {}) {
+        const submitButton = document.getElementById('checkoutSubmitButton');
+        const bottomSubmitButton = document.getElementById('checkoutSubmitBtn');
+        if (submitButton) {
+            const totalItem = Number(summary.items ?? 0);
+            const hasItem = totalItem > 0;
+
+            submitButton.disabled = !hasItem;
+            submitButton.classList.toggle('bg-gray-300', !hasItem);
+            submitButton.classList.toggle('cursor-not-allowed', !hasItem);
+            submitButton.classList.toggle('hover:bg-gray-300', !hasItem);
+            submitButton.classList.toggle('bg-[#292522]', hasItem);
+            submitButton.classList.toggle('hover:bg-[#302F2A]', hasItem);
+        }
+
+        if (bottomSubmitButton) {
+            const totalItem = Number(summary.items ?? 0);
+            const hasItem = totalItem > 0;
+            bottomSubmitButton.disabled = !hasItem;
+            bottomSubmitButton.classList.toggle('opacity-50', !hasItem);
+            bottomSubmitButton.classList.toggle('cursor-not-allowed', !hasItem);
+            bottomSubmitButton.classList.toggle('bg-[#292522]', hasItem);
+            bottomSubmitButton.classList.toggle('hover:bg-[#302F2A]', hasItem);
+        }
     }
 
     function openCameraModal() {
@@ -1079,7 +1249,8 @@
       try {
         const response = await fetch(`{{ route('pos.scan-barcode') }}?barcode=${encodeURIComponent(barcode)}`, {
           method: 'GET',
-          headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'same-origin',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
         });
         const payload = await response.json();
         if (!response.ok || !payload.success) {
@@ -1141,6 +1312,69 @@
 
       dom.barcodeInput?.addEventListener('keydown', handleBarcodeEnter);
       bindCartItemEvents();
+
+      dom.saveOrderForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = dom.saveOrderForm;
+        if (!form) return;
+
+        const action = form.action;
+        const formData = new FormData(form);
+        formData.append('_token', dom.csrfToken);
+
+        try {
+          const response = await fetch(action, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'X-CSRF-TOKEN': dom.csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json',
+            },
+            body: formData,
+          });
+
+          let result = null;
+          const contentType = response.headers.get('Content-Type') || '';
+          if (contentType.includes('application/json')) {
+            result = await response.json();
+          }
+
+          if (!response.ok || !result?.success) {
+            const errorMessage = result?.message || 'Gagal menyimpan pesanan.';
+            showMessage(errorMessage, 'error');
+            focusBarcode();
+            return;
+          }
+
+          if (result.saved_orders_html) {
+            updateSavedOrders(result.saved_orders_html);
+          }
+
+          if (result.cart_html) {
+            updateCartUI(result.cart_html, result.summary ?? {});
+          }
+
+          if (result.checkout_html) {
+            updateCheckoutItems(result.checkout_html);
+          }
+
+          if (result.summary) {
+            updateSummaryUI(result.summary);
+          }
+
+          updateCheckoutButtons(result.cart_count ?? 0);
+          showMessage(result.message || 'Pesanan berhasil disimpan', 'success');
+          focusBarcode();
+        } catch (error) {
+          showMessage(error?.message || 'Gagal menyimpan pesanan.', 'error');
+          focusBarcode();
+        }
+      });
+
+      const initialCartCount = Number(document.body.dataset.cartCount || 0);
+      updateCheckoutButtons(initialCartCount);
+      bindSavedOrderEvents();
 
       // modal controls
       dom.closeProductModal?.addEventListener('click', closeProductModal);

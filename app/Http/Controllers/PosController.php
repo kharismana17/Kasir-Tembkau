@@ -22,6 +22,12 @@ use App\Http\Controllers\Traits\CartHelpers;
 class PosController extends Controller
 {
     use CartHelpers;
+
+    protected function getCurrentLocationId(): ?int
+    {
+        return auth()->user()?->cashierUnit?->location_id;
+    }
+
     /**
      * Display POS page.
      */
@@ -64,15 +70,6 @@ class PosController extends Controller
 
         $paymentMethods = $this->getPaymentMethods();
         $summary = $this->calculateCartSummary($cart);
-
-        return view('pos.checkout', [
-            'cart' => $cart,
-            'paymentMethods' => $paymentMethods,
-            'subtotal' => $summary['subtotal'],
-            'discount' => $summary['discount'],
-            'taxAmount' => $summary['taxAmount'],
-            'grandTotal' => $summary['grandTotal'],
-        ]);
     }
 
     public function receiptPage(Transaction $transaction)
@@ -99,6 +96,7 @@ class PosController extends Controller
         $paymentMethod = PaymentMethod::findOrFail($data['payment_method_id']);
         $isQris = str_contains(strtolower($paymentMethod->name), 'qris');
         $cart = $this->getCart();
+        $locationId = $this->getCurrentLocationId();
 
         if (empty($cart)) {
             return back()->with('error', 'Keranjang masih kosong.');
@@ -114,8 +112,8 @@ class PosController extends Controller
             return back()->with('error', "Batas transaksi harian tercapai. Maksimal {$dailyLimit} transaksi per hari.");
         }
 
-        DB::transaction(function () use ($data, $cart, $paymentMethod, $isQris, &$transaction) {
-            $items = collect($cart)->map(function ($item) {
+        DB::transaction(function () use ($data, $cart, $paymentMethod, $isQris, $locationId, &$transaction) {
+            $items = collect($cart)->map(function ($item) use ($locationId) {
                 $product = Product::with('category')
                     ->lockForUpdate()
                     ->findOrFail($item['product_id']);
@@ -130,10 +128,10 @@ class PosController extends Controller
 
                 $stockReduction = $this->resolveStockReduction($product, $item['qty']);
 
-                if ($product->stock < $stockReduction) {
+                if ($product->stockAtLocation($locationId) < $stockReduction) {
                     abort(
                         422,
-                        "Stok produk {$product->name} tidak mencukupi. Stok saat ini: {$product->stock}. Diperlukan: {$stockReduction}."
+                        "Stok produk {$product->name} tidak mencukupi. Stok saat ini: {$product->stockAtLocation($locationId)}. Diperlukan: {$stockReduction}."
                     );
                 }
 
@@ -214,6 +212,7 @@ class PosController extends Controller
             $transaction = Transaction::create([
                 'invoice_no' => $invoiceNo,
                 'user_id' => auth()->id(),
+                'location_id' => $locationId,
                 'subtotal' => $summary['subtotal'],
                 'discount' => 0,
                 'tax_percentage' => $taxPercentage,
@@ -256,13 +255,14 @@ class PosController extends Controller
                     'product_barcode' => $product->barcode ?? '-',
                 ]);
 
-                $product->decrement(
-                    'stock',
+                $product->reduceStock(
+                    $locationId,
                     $item['stock_reduction']
                 );
 
                 StockMovement::create([
                     'product_id' => $item['product']->id,
+                    'location_id' => $locationId,
                     'change' => -$item['stock_reduction'],
                     'type' => 'stock_out',
                     'reference_type' => 'transaction',
@@ -296,7 +296,9 @@ class PosController extends Controller
      */
     public function addToCart(Product $product)
     {
-        if (! $product->is_active || $product->stock <= 0) {
+        $locationId = $this->getCurrentLocationId();
+
+        if (! $product->is_active || $product->stockAtLocation($locationId) <= 0) {
             return response()->json(['success' => false, 'message' => 'Produk tidak tersedia.'], 404);
         }
 
@@ -332,7 +334,7 @@ class PosController extends Controller
 
             $requiredStock = $this->resolveStockReduction($product, $newQty);
 
-            if ($requiredStock > $product->stock) {
+            if ($requiredStock > $product->stockAtLocation($locationId)) {
                 return response()->json(['success' => false, 'message' => 'Jumlah melebihi stok tersedia.'], 422);
             }
 
@@ -359,7 +361,7 @@ class PosController extends Controller
 
             $requiredStock = $this->resolveStockReduction($product, $initialQty);
 
-            if ($requiredStock > $product->stock) {
+            if ($requiredStock > $product->stockAtLocation($locationId)) {
                 return response()->json(['success' => false, 'message' => 'Jumlah melebihi stok tersedia.'], 422);
             }
 
@@ -387,11 +389,15 @@ class PosController extends Controller
             'success' => true,
             'message' => 'Produk berhasil ditambahkan ke keranjang.',
             'cart_html' => view('pos.partials.cart-items', ['cart' => $cart])->render(),
+            'checkout_html' => view('pos.partials.checkout-items', [
+                'cart' => $cart,
+                'totalItems' => count($cart),
+            ])->render(),
             'summary' => [
                 'items' => count($cart),
                 'gram' => collect($cart)->where('is_tembakau', true)->sum('qty'),
-                'subtotal' => $summary['subtotal'] ?? 0,
-                'grand_total' => $summary['grandTotal'] ?? $summary['grand_total'] ?? 0,
+                'subtotal' => $summary['subtotal'],
+                'grand_total' => $summary['grandTotal'],
             ],
             'cart_count' => count($cart),
         ]);
@@ -430,12 +436,21 @@ class PosController extends Controller
         $cart = $this->getCart();
 
         if (! isset($cart[$product->id])) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Produk tidak ada di keranjang.'], 404);
+            }
+
             return back()->with('error', 'Produk tidak ada di keranjang.');
         }
 
+        $locationId = $this->getCurrentLocationId();
         $requiredStock = $this->resolveStockReduction($product, $data['qty']);
 
-        if ($requiredStock > $product->stock) {
+        if ($requiredStock > $product->stockAtLocation($locationId)) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Jumlah melebihi stok tersedia.'], 422);
+            }
+
             return back()->with('error', 'Jumlah melebihi stok tersedia.');
         }
 
@@ -445,7 +460,12 @@ class PosController extends Controller
             $min = $product->wholesale_min_qty ?? null;
             if ($min !== null && $data['qty'] < $min) {
                 $unitLabel = str_contains($product->saleType(), 'gram') ? 'gram' : 'pcs';
-                return back()->with('error', "Minimal pembelian grosir adalah {$min} {$unitLabel}.");
+                $message = "Minimal pembelian grosir adalah {$min} {$unitLabel}.";
+                if ($request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => $message], 422);
+                }
+
+                return back()->with('error', $message);
             }
         }
 
@@ -454,11 +474,19 @@ class PosController extends Controller
             $cart[$product->id]['purchase_type'] = $data['purchase_type'];
             $cart[$product->id]['price'] = $this->resolveCartPrice($product, $data['purchase_type']);
         }
-        if (isset($data['input_method'])) $cart[$product->id]['input_method'] = $data['input_method'];
-        if (isset($data['price'])) $cart[$product->id]['price'] = (float) $data['price'];
+        if (isset($data['input_method'])) {
+            $cart[$product->id]['input_method'] = $data['input_method'];
+        }
+        if (isset($data['price'])) {
+            $cart[$product->id]['price'] = (float) $data['price'];
+        }
         $cart[$product->id]['subtotal'] = $this->calculateCartItemSubtotal($product, $cart[$product->id]['price'], $cart[$product->id]['qty']);
 
         $this->saveCart($cart);
+
+        if ($request->expectsJson()) {
+            return response()->json($this->buildCartAjaxResponse($cart, 'Jumlah produk berhasil diperbarui.'));
+        }
 
         return back()->with('success', 'Jumlah produk berhasil diperbarui.');
     }
@@ -480,11 +508,19 @@ class PosController extends Controller
         $cart = $this->getCart();
 
         if (! isset($cart[$product->id])) {
+            if (request()->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Produk tidak ada di keranjang.'], 404);
+            }
+
             return back()->with('error', 'Produk tidak ada di keranjang.');
         }
 
         unset($cart[$product->id]);
         $this->saveCart($cart);
+
+        if (request()->expectsJson()) {
+            return response()->json($this->buildCartAjaxResponse($cart, 'Produk berhasil dihapus dari keranjang.'));
+        }
 
         return back()->with('success', 'Produk berhasil dihapus dari keranjang.');
     }
@@ -494,9 +530,38 @@ class PosController extends Controller
      */
     public function clearCart()
     {
-        $this->saveCart([]);
+        $cart = [];
+        $this->saveCart($cart);
+
+        if (request()->expectsJson()) {
+            return response()->json($this->buildCartAjaxResponse($cart, 'Keranjang berhasil dikosongkan.'));
+        }
 
         return back()->with('success', 'Keranjang berhasil dikosongkan.');
+    }
+
+    private function buildCartAjaxResponse(array $cart, string $message = ''): array
+    {
+        $summary = $this->calculateCartSummary($cart);
+
+        return [
+            'success' => true,
+            'message' => $message,
+            'cart_html' => view('pos.partials.cart-items', ['cart' => $cart])->render(),
+            'checkout_html' => view('pos.partials.checkout-items', [
+                'cart' => $cart,
+                'totalItems' => count($cart),
+            ])->render(),
+            'summary' => [
+                'items' => count($cart),
+                'gram' => collect($cart)->where('is_tembakau', true)->sum('qty'),
+                'subtotal' => $summary['subtotal'],
+                'tax' => $summary['taxAmount'],
+                'discount' => $summary['discount'],
+                'grand_total' => $summary['grandTotal'],
+            ],
+            'cart_count' => count($cart),
+        ];
     }
 
     /**
@@ -509,11 +574,16 @@ class PosController extends Controller
      */
     private function getActiveProducts()
     {
-        return Product::with('category')
+        $locationId = $this->getCurrentLocationId();
+
+        $products = Product::with('category', 'stocks')
             ->where('is_active', true)
-            ->where('stock', '>', 0)
-            ->orderBy('name')
-            ->get();
+            ->get()
+            ->filter(function ($product) use ($locationId) {
+                return $product->stockAtLocation($locationId) > 0;
+            });
+
+        return $products->sortBy('name')->values();
     }
 
     /**
@@ -541,6 +611,8 @@ class PosController extends Controller
      */
     public function scanBarcode(Request $request)
     {
+        $locationId = $this->getCurrentLocationId();
+
         try {
             // ============================================================
             // 1. INPUT SANITIZATION
@@ -656,18 +728,19 @@ class PosController extends Controller
             }
 
             // Check stock availability
-            if ($product->stock <= 0) {
+            if ($product->stockAtLocation($locationId) <= 0) {
                 Log::channel('barcode')->notice('PRODUCT_OUT_OF_STOCK', [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'barcode' => $barcode,
-                    'stock' => $product->stock,
+                    'location_id' => $locationId,
+                    'stock' => $product->stockAtLocation($locationId),
                     'user_id' => auth()->id(),
                 ]);
                 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Produk sedang kosong (stok: ' . $product->stock . ').',
+                    'message' => 'Produk sedang kosong (stok: ' . $product->stockAtLocation($locationId) . ').',
                 ], 422);
             }
 
@@ -683,7 +756,7 @@ class PosController extends Controller
                     'category_name' => $product->category?->name ?? '-',
                     'price' => (float) $product->sell_price,
                     'barcode' => $product->barcode,
-                    'stock' => (int) $product->stock,
+                    'stock' => (int) $product->stockAtLocation($locationId),
                     'selling_unit' => $product->selling_unit,
                     'sale_type' => $product->saleType(),
                     'wholesale_price' => (float) ($product->wholesale_price ?? 0),

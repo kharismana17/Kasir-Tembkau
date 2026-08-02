@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\UserPinController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\StockMovementController;
+use App\Http\Controllers\Admin\StockTransferController;
 use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\ReportController;
@@ -258,6 +259,21 @@ Route::middleware(['auth', 'active', 'role:admin'])
 
         Route::get('/stock/movements', [StockMovementController::class, 'index'])
             ->name('stock.movements');
+
+        Route::get('/stock/transfers', [StockTransferController::class, 'index'])
+            ->name('stock.transfers.index');
+
+        Route::get('/stock/transfers/create', [StockTransferController::class, 'create'])
+            ->name('stock.transfers.create');
+
+        Route::post('/stock/transfers', [StockTransferController::class, 'store'])
+            ->name('stock.transfers.store');
+
+        Route::post('/stock/transfers/{transfer}/approve', [StockTransferController::class, 'approve'])
+            ->name('stock.transfers.approve');
+
+        Route::post('/stock/transfers/{transfer}/reject', [StockTransferController::class, 'reject'])
+            ->name('stock.transfers.reject');
 
 
         /*

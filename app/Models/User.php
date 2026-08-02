@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\CashierUnit;
+use App\Models\Location;
 
 class User extends Authenticatable
 {
@@ -74,6 +75,11 @@ class User extends Authenticatable
     public function cashierUnit()
     {
         return $this->belongsTo(CashierUnit::class);
+    }
+
+    public function currentLocation(): ?Location
+    {
+        return $this->cashierUnit?->location;
     }
 
     public function attendances()

@@ -30,6 +30,13 @@ class SavedOrderController extends Controller
         $cart = session('cart', []);
 
         if (empty($cart)) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Keranjang masih kosong.',
+                ], 422);
+            }
+
             return redirect()->route('pos.index')->with('error', 'Keranjang masih kosong.');
         }
 
@@ -56,7 +63,7 @@ class SavedOrderController extends Controller
                     'purchase_type' => $item['purchase_type'] ?? null,
                     'input_method' => $item['input_method'] ?? null,
                     'is_tembakau' => $item['is_tembakau'] ?? false,
-                    'subtotal' => $item['is_tembakau'] ?? false
+                    'subtotal' => ($item['is_tembakau'] ?? false)
                         ? ($item['price'] * ($item['qty'] / 100))
                         : ($item['price'] * ($item['qty'] ?? 0)),
                 ]);
@@ -64,8 +71,13 @@ class SavedOrderController extends Controller
         });
 
         // Clear session cart and any saved_order_id
-        session()->forget('cart');
+        $cart = [];
+        $this->saveCart($cart);
         session()->forget('saved_order_id');
+
+        if ($request->expectsJson()) {
+            return response()->json($this->buildSavedOrderAjaxResponse($cart, 'Pesanan berhasil disimpan.'));
+        }
 
         return redirect()->route('pos.index')->with('success', 'Saved order berhasil disimpan.');
     }
@@ -73,7 +85,7 @@ class SavedOrderController extends Controller
     /**
      * Load a saved order into session cart
      */
-    public function load(SavedOrder $savedOrder)
+    public function load(Request $request, SavedOrder $savedOrder)
     {
         if ($savedOrder->user_id !== auth()->id()) {
             abort(403);
@@ -97,8 +109,12 @@ class SavedOrderController extends Controller
             ];
         }
 
-        session()->put('cart', $cart);
+        $this->saveCart($cart);
         session()->put('saved_order_id', $savedOrder->id);
+
+        if ($request->expectsJson()) {
+            return response()->json($this->buildSavedOrderAjaxResponse($cart, 'Saved order berhasil dimuat.'));
+        }
 
         return redirect()->route('pos.index');
     }
@@ -106,7 +122,7 @@ class SavedOrderController extends Controller
     /**
      * Delete saved order
      */
-    public function delete(SavedOrder $savedOrder)
+    public function delete(Request $request, SavedOrder $savedOrder)
     {
         if ($savedOrder->user_id !== auth()->id()) {
             abort(403);
@@ -121,6 +137,41 @@ class SavedOrderController extends Controller
             session()->forget('saved_order_id');
         }
 
+        $cart = $this->getCart();
+
+        if ($request->expectsJson()) {
+            return response()->json($this->buildSavedOrderAjaxResponse($cart, 'Saved order dihapus.'));
+        }
+
         return redirect()->route('pos.index')->with('success', 'Saved order dihapus.');
+    }
+
+    private function buildSavedOrderAjaxResponse(array $cart, string $message = ''): array
+    {
+        $summary = $this->calculateCartSummary($cart);
+        $savedOrders = SavedOrder::where('user_id', auth()->id())
+            ->withCount('items')
+            ->latest()
+            ->get();
+
+        return [
+            'success' => true,
+            'message' => $message,
+            'cart_html' => view('pos.partials.cart-items', ['cart' => $cart])->render(),
+            'checkout_html' => view('pos.partials.checkout-items', [
+                'cart' => $cart,
+                'totalItems' => count($cart),
+            ])->render(),
+            'saved_orders_html' => view('pos.partials.saved-orders', ['savedOrders' => $savedOrders])->render(),
+            'summary' => [
+                'items' => count($cart),
+                'gram' => collect($cart)->where('is_tembakau', true)->sum('qty'),
+                'subtotal' => $summary['subtotal'],
+                'tax' => $summary['taxAmount'],
+                'discount' => $summary['discount'],
+                'grand_total' => $summary['grandTotal'],
+            ],
+            'cart_count' => count($cart),
+        ];
     }
 }

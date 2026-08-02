@@ -11,7 +11,7 @@
     @vite(['resources/css/app.css'])
 </head>
 
-<body class="min-h-screen bg-[#F7F5F0] text-[#292522]">
+<body class="min-h-screen bg-[#F7F5F0] text-[#292522]" data-cart-count="{{ $cartCount ?? 0 }}">
 
     @php
         $currentUser = auth()->user();

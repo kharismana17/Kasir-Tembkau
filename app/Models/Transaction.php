@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Location;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,6 +13,7 @@ class Transaction extends Model
     protected $fillable = [
         'invoice_no',
         'user_id',
+        'location_id',
         'subtotal',
         'discount',
         'total',
@@ -48,6 +50,11 @@ class Transaction extends Model
     public function paymentMethod()
     {
         return $this->belongsTo(PaymentMethod::class);
+    }
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
     }
 
     public function items()

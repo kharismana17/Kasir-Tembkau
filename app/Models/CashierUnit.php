@@ -13,6 +13,7 @@ class CashierUnit extends Model
         'name',
         'code',
         'is_active',
+        'location_id',
     ];
 
     protected $casts = [
@@ -22,5 +23,10 @@ class CashierUnit extends Model
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
     }
 }
